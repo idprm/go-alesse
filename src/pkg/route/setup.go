@@ -14,5 +14,10 @@ func Setup(app *fiber.App) {
 
 	v1.Post("login", handler.Login)
 	v1.Post("register", handler.Register)
+	v1.Post("verify", handler.Verify)
+
+	auth := v1.Group("auth")
+	auth.Get("chat", handler.GetChat)
+	auth.Get("medical", handler.GetMedical)
 
 }

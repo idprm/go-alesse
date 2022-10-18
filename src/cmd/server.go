@@ -5,7 +5,8 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/idprm/go-alesse/src/handler"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/idprm/go-alesse/src/pkg/route"
 	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
 	"github.com/spf13/cobra"
 )
@@ -23,19 +24,9 @@ var serverCmd = &cobra.Command{
 
 		app := fiber.New()
 
-		// version 1
-		v1 := app.Group("v1")
+		app.Use(cors.New())
 
-		/**
-		 * FRONTEND ROUTES
-		 */
-		v1.Post("register", handler.Register)
-		v1.Post("login", handler.Login)
-		v1.Post("verify", handler.Verify)
-
-		auth := v1.Group("auth")
-		auth.Get("chat", handler.GetChat)
-		auth.Get("medical", handler.GetMedical)
+		route.Setup(app)
 
 		path, err := os.Getwd()
 
