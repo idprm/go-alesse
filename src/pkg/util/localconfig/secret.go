@@ -10,9 +10,10 @@ import (
 )
 
 type Secret struct {
-	DB DBCredential `yaml:"db"`
-	SB SBCredential `yaml:"sendbird"`
-	ZV ZVCredential `yaml:"zenziva"`
+	DB  DBCredential  `yaml:"db"`
+	SB  SBCredential  `yaml:"sendbird"`
+	ZV  ZVCredential  `yaml:"zenziva"`
+	JWT JWTCredential `yaml:"jwt"`
 }
 
 type DBCredential struct {
@@ -32,7 +33,12 @@ type ZVCredential struct {
 	Url      string `yaml:"url"`
 	UserName string `yaml:"username"`
 	Password string `yaml:"password"`
-	Instance int    `yaml:"instance"`
+	Instance string `yaml:"instance"`
+}
+
+type JWTCredential struct {
+	Secret string `yaml:"secret"`
+	Expire string `yaml:"expire"`
 }
 
 func LoadSecret(path string) (*Secret, error) {

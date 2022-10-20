@@ -22,11 +22,16 @@ var serverCmd = &cobra.Command{
 			panic(err)
 		}
 
+		secret, err := localconfig.LoadSecret("src/server/secret.yaml")
+		if err != nil {
+			panic(err)
+		}
+
 		app := fiber.New()
 
 		app.Use(cors.New())
 
-		route.Setup(app)
+		route.Setup(secret, app)
 
 		path, err := os.Getwd()
 

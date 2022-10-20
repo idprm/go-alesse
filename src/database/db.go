@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/idprm/go-alesse/src/pkg/domain/model"
+	"github.com/idprm/go-alesse/src/pkg/model"
 	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

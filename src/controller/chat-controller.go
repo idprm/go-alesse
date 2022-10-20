@@ -1,8 +1,8 @@
-package handler
+package controller
 
 import "github.com/gofiber/fiber/v2"
 
-func GetChat(c *fiber.Ctx) error {
+func ChatDoctor(c *fiber.Ctx) error {
 	return nil
 }
 
