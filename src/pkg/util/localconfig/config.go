@@ -18,6 +18,7 @@ type AppCredential struct {
 	Name string `yaml:"name"`
 	Url  string `yaml:"url"`
 	Port string `yaml:"port"`
+	Host string `yaml:"host"`
 }
 
 // LoadConfig reads the file from path and return Secret

@@ -3,11 +3,11 @@ package route
 import (
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
+	"github.com/idprm/go-alesse/src/config"
 	"github.com/idprm/go-alesse/src/controller"
-	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
 )
 
-func Setup(cfg *localconfig.Secret, app *fiber.App) {
+func Setup(app *fiber.App) {
 
 	app.Get("/", controller.FrontHandler)
 
@@ -25,15 +25,15 @@ func Setup(cfg *localconfig.Secret, app *fiber.App) {
 
 	chat := v1.Group("chat")
 	chat.Post("/doctor", controller.ChatDoctor)
-	// chat.Delete("/leave", controller.ChatLeave)
-	// chat.Delete("/delete", controller.ChatDelete)
+	chat.Delete("/leave", controller.ChatLeave)
+	chat.Delete("/delete", controller.ChatDelete)
 
 	/**
 	 * AUTHENTICATED ROUTES
 	 */
 	authenticated := v1.Group("authenticated")
-	authenticated.Use(jwtware.New(jwtware.Config{SigningKey: []byte(cfg.JWT.Secret)}))
-	// authenticated.Post("orders", controller.OrderChat)
-	// authenticated.Post("chat/user", controller.ChatUser)
+	authenticated.Use(jwtware.New(jwtware.Config{SigningKey: []byte(config.ViperEnv("JWT_SECRET_AUTH"))}))
+	authenticated.Post("orders", controller.OrderChat)
+	authenticated.Post("chat/user", controller.ChatUser)
 
 }

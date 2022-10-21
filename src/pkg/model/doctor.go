@@ -3,11 +3,11 @@ package model
 import (
 	"time"
 
-	"github.com/idprm/go-alesse/src/common"
+	"gorm.io/gorm"
 )
 
 type Doctor struct {
-	common.Model
+	ID                   uint      `gorm:"primaryKey" json:"id"`
 	Username             string    `gorm:"size:25;unique;not null" json:"username"`
 	Name                 string    `gorm:"size:100;not null" json:"name"`
 	Photo                string    `gorm:"size:150;not null" json:"photo"`
@@ -20,4 +20,5 @@ type Doctor struct {
 	Phone                string    `gorm:"size:15" json:"phone"`
 	Start                time.Time `gorm:"type:time" json:"start"`
 	End                  time.Time `gorm:"type:time" json:"end"`
+	gorm.Model           `json:"-"`
 }

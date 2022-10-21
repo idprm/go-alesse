@@ -68,9 +68,11 @@ func Connect() {
 	log.Println("Connected to database successfully")
 
 	db.AutoMigrate(
+		&model.Config{},
 		&model.User{},
 		&model.Verify{},
 		&model.Doctor{},
+		&model.Clinic{},
 		&model.Chat{},
 		&model.Medical{},
 		&model.Sendbird{},

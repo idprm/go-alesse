@@ -6,7 +6,6 @@ import (
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/middleware"
 	"github.com/idprm/go-alesse/src/pkg/model"
-	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
 )
 
 type AuthRequest struct {
@@ -60,7 +59,7 @@ func ValidateVerify(req VerifyRequest) []*ErrorResponse {
 func FrontHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":    false,
-		"messsage": "Welcome to yellowclinic",
+		"messsage": "Welcome to Alesse",
 	})
 }
 
@@ -89,11 +88,6 @@ func AuthHandler(c *fiber.Ctx) error {
 	var user model.User
 	isExist := database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
 
-	secret, err := localconfig.LoadSecret("src/server/secret.yaml")
-	if err != nil {
-		panic(err)
-	}
-
 	if isExist.RowsAffected == 0 {
 		database.Datasource.DB().Create(&model.User{
 			Msisdn: req.Msisdn,
@@ -108,7 +102,7 @@ func AuthHandler(c *fiber.Ctx) error {
 	var usr model.User
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&usr)
 
-	token, exp, err := middleware.GenerateJWTToken(secret, usr)
+	token, exp, err := middleware.GenerateJWTToken(usr)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,

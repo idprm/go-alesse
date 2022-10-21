@@ -1,4 +1,4 @@
-package middleware
+package handler
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/idprm/go-alesse/src/config"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/model"
-	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
 )
 
 type User struct {
@@ -46,8 +46,8 @@ type ErrorResponse struct {
 	Error      bool   `json:"error"`
 }
 
-func SendbirdCreateUser(cfg *localconfig.Secret, user model.User) (string, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/users"
+func SendbirdCreateUser(user model.User) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users"
 
 	userId := user.Msisdn
 	nickName := user.Name
@@ -55,12 +55,12 @@ func SendbirdCreateUser(cfg *localconfig.Secret, user model.User) (string, error
 	data := User{
 		UserId:     userId,
 		Nickname:   nickName,
-		ProfileUrl: "https://a-lesse.com/images/logo/a-lesse.png",
+		ProfileUrl: "https://yellowclinic.sehatcepat.com/images/logo/yellow-clinic.png",
 	}
 
 	payload, _ := json.Marshal(data)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	if err != nil {
@@ -93,11 +93,11 @@ func SendbirdCreateUser(cfg *localconfig.Secret, user model.User) (string, error
 	return string([]byte(body)), nil
 }
 
-func SendbirdGetUser(cfg *localconfig.Secret, user model.User) (string, bool, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/users/" + user.Msisdn
+func SendbirdGetUser(user model.User) (string, bool, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users/" + user.Msisdn
 
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	if err != nil {
@@ -133,11 +133,11 @@ func SendbirdGetUser(cfg *localconfig.Secret, user model.User) (string, bool, er
 	return string([]byte(body)), errorResponse.Error, nil
 }
 
-func SendbirdDeleteUser(cfg *localconfig.Secret, user model.User) (string, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/users/" + user.Msisdn
+func SendbirdDeleteUser(user model.User) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users/" + user.Msisdn
 
 	req, err := http.NewRequest("DELETE", url, nil)
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	if err != nil {
@@ -170,8 +170,8 @@ func SendbirdDeleteUser(cfg *localconfig.Secret, user model.User) (string, error
 	return string([]byte(body)), nil
 }
 
-func SendbirdCreateGroupChannel(cfg *localconfig.Secret, doctor model.Doctor, user model.User) (string, string, string, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/group_channels"
+func SendbirdCreateGroupChannel(doctor model.Doctor, user model.User) (string, string, string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels"
 
 	users := []string{doctor.Username, user.Msisdn}
 	operators := []string{"alesse"}
@@ -196,7 +196,7 @@ func SendbirdCreateGroupChannel(cfg *localconfig.Secret, doctor model.Doctor, us
 		return "", "", "", errors.New(err.Error())
 	}
 
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	tr := &http.Transport{
@@ -236,11 +236,11 @@ func SendbirdCreateGroupChannel(cfg *localconfig.Secret, doctor model.Doctor, us
 	return string([]byte(body)), result.Name, result.ChannelUrl, nil
 }
 
-func SendbirdGetGroupChannel(cfg *localconfig.Secret, chat model.Chat) (string, bool, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/group_channels/" + chat.ChannelUrl
+func SendbirdGetGroupChannel(chat model.Chat) (string, bool, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + chat.ChannelUrl
 
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	if err != nil {
@@ -275,11 +275,11 @@ func SendbirdGetGroupChannel(cfg *localconfig.Secret, chat model.Chat) (string, 
 	return string([]byte(body)), errorResponse.Error, nil
 }
 
-func SendbirdDeleteGroupChannel(cfg *localconfig.Secret, channel model.Chat) (string, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/group_channels/" + channel.ChannelUrl
+func SendbirdDeleteGroupChannel(channel model.Chat) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + channel.ChannelUrl
 
 	req, err := http.NewRequest("DELETE", url, nil)
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	if err != nil {
@@ -312,8 +312,8 @@ func SendbirdDeleteGroupChannel(cfg *localconfig.Secret, channel model.Chat) (st
 	return string([]byte(body)), nil
 }
 
-func SendbirdLeaveGroupChannel(cfg *localconfig.Secret, channel string, user string) (string, bool, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/group_channels/" + channel + "/leave"
+func SendbirdLeaveGroupChannel(channel string, user string) (string, bool, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + channel + "/leave"
 
 	userLeave := UserLeave{
 		UserIds: []string{user},
@@ -322,7 +322,7 @@ func SendbirdLeaveGroupChannel(cfg *localconfig.Secret, channel string, user str
 	payload, _ := json.Marshal(userLeave)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 	if err != nil {
 		return "", true, errors.New(err.Error())
@@ -357,8 +357,8 @@ func SendbirdLeaveGroupChannel(cfg *localconfig.Secret, channel string, user str
 	return string([]byte(body)), errorResponse.Error, nil
 }
 
-func SendbirdAutoMessageDoctor(cfg *localconfig.Secret, channel string, doctor model.Doctor, user model.User) (string, error) {
-	url := "https://api-" + cfg.SB.AppID + ".sendbird.com/v3/group_channels/" + channel + "/messages"
+func SendbirdAutoMessageDoctor(channel string, doctor model.Doctor, user model.User) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + channel + "/messages"
 
 	var conf model.Config
 	database.Datasource.DB().Where("name", "AUTO_MESSAGE_SENDBIRD").First(&conf)
@@ -377,7 +377,7 @@ func SendbirdAutoMessageDoctor(cfg *localconfig.Secret, channel string, doctor m
 		return "", errors.New(err.Error())
 	}
 
-	req.Header.Set("Api-Token", cfg.SB.Token)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
 	req.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	tr := &http.Transport{

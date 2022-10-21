@@ -1,4 +1,4 @@
-package middleware
+package handler
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/idprm/go-alesse/src/pkg/util/localconfig"
+	"github.com/idprm/go-alesse/src/config"
 )
 
 type NotifDoctorRequest struct {
@@ -19,13 +19,13 @@ type NotifDoctorRequest struct {
 	Pesan    string `json:"pesan"`
 }
 
-func ZenzivaSendSMS(cfg *localconfig.Secret, msisdn string, message string) (string, error) {
-	url := cfg.ZV.Url + "/api/WAsendMsg/"
+func ZenzivaSendSMS(msisdn string, message string) (string, error) {
+	url := config.ViperEnv("ZENZIVA_URL") + "/api/WAsendMsg/"
 
 	request := NotifDoctorRequest{
-		Userkey:  cfg.ZV.UserName,
-		Passkey:  cfg.ZV.Password,
-		Instance: cfg.ZV.Instance,
+		Userkey:  config.ViperEnv("ZENZIVA_USER"),
+		Passkey:  config.ViperEnv("ZENZIVA_PASS"),
+		Instance: config.ViperEnv("ZENZIVA_INSTANCE"),
 		Nohp:     msisdn,
 		Pesan:    message,
 	}
