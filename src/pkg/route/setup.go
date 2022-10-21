@@ -13,6 +13,7 @@ func Setup(cfg *localconfig.Secret, app *fiber.App) {
 
 	v1 := app.Group("v1")
 	v1.Post("auth", controller.AuthHandler)
+	v1.Post("verify", controller.VerifyHandler)
 
 	doctor := v1.Group("doctors")
 	doctor.Get("/", controller.GetAllDoctor)
