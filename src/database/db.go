@@ -69,6 +69,7 @@ func Connect() {
 
 	db.AutoMigrate(
 		&model.Config{},
+		&model.Healthcenter{},
 		&model.User{},
 		&model.Verify{},
 		&model.Doctor{},
@@ -81,16 +82,24 @@ func Connect() {
 
 	// TODO: Add seeders
 	var config []model.Config
+	var healthcenter []model.Healthcenter
 	var doctor []model.Doctor
 	var clinic []model.Clinic
 
 	resultConfig := db.Find(&config)
+	resultHealthCenter := db.Find(&healthcenter)
 	resultDoctor := db.Find(&doctor)
 	resultClinic := db.Find(&clinic)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
 			db.Model(&model.Config{}).Create(&configs[i])
+		}
+	}
+
+	if resultHealthCenter.RowsAffected == 0 {
+		for i, _ := range healthcenters {
+			db.Model(&model.Healthcenter{}).Create(&healthcenters[i])
 		}
 	}
 

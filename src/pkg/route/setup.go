@@ -15,9 +15,13 @@ func Setup(app *fiber.App) {
 	v1.Post("auth", controller.AuthHandler)
 	v1.Post("verify", controller.VerifyHandler)
 
-	doctor := v1.Group("doctors")
-	doctor.Get("/", controller.GetAllDoctor)
-	doctor.Get("/:username", controller.GetDoctor)
+	healthcenters := v1.Group("healthcenters")
+	healthcenters.Get("/", controller.GetAllHealthCenter)
+	healthcenters.Get("/:code", controller.GetHealthCenter)
+
+	doctors := v1.Group("doctors")
+	doctors.Get("/", controller.GetAllDoctor)
+	doctors.Get("/:username", controller.GetDoctor)
 
 	medicals := v1.Group("medicals")
 	medicals.Get("/", controller.GetAllMedical)
