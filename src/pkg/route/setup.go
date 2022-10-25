@@ -3,8 +3,8 @@ package route
 import (
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
-	"github.com/idprm/go-alesse/src/config"
 	"github.com/idprm/go-alesse/src/controller"
+	"github.com/idprm/go-alesse/src/pkg/config"
 )
 
 func Setup(app *fiber.App) {

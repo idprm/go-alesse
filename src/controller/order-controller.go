@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/idprm/go-alesse/src/config"
 	"github.com/idprm/go-alesse/src/database"
+	"github.com/idprm/go-alesse/src/pkg/config"
 	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/model"
 	"github.com/idprm/go-alesse/src/pkg/util"

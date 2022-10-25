@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/idprm/go-alesse/src/config"
+	"github.com/idprm/go-alesse/src/pkg/config"
 	"github.com/idprm/go-alesse/src/pkg/model"
 )
 

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/idprm/go-alesse/src/config"
+	"github.com/idprm/go-alesse/src/pkg/config"
 )
 
 type NotifDoctorRequest struct {

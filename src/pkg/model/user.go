@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/idprm/go-alesse/src/common"
+	"github.com/idprm/go-alesse/src/pkg/common"
 )
 
 type User struct {

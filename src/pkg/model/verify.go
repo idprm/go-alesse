@@ -1,6 +1,6 @@
 package model
 
-import "github.com/idprm/go-alesse/src/common"
+import "github.com/idprm/go-alesse/src/pkg/common"
 
 type Verify struct {
 	common.Model
