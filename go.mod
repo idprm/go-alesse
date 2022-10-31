@@ -13,6 +13,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.38.1 // indirect
 	github.com/gofiber/jwt/v3 v3.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jinzhu/gorm v1.9.2 // indirect

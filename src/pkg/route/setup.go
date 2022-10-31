@@ -49,6 +49,8 @@ func Setup(app *fiber.App) {
 	homecares.Get("/", controller.GetAllHomecare)
 	homecares.Get("/detail/:number", controller.GetHomecare)
 	homecares.Post("/", controller.SaveHomecare)
+	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
+	homecares.Post("/photos", controller.UploadPhoto)
 
 	/**
 	 * AUTHENTICATED ROUTES

@@ -1,10 +1,14 @@
 package controller
 
 import (
+	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/model"
 )
@@ -45,6 +49,12 @@ func GetHomecare(c *fiber.Ctx) error {
 	var homecare model.Homecare
 	database.Datasource.DB().First(&homecare)
 	return c.Status(fiber.StatusOK).JSON(homecare)
+}
+
+func GetHomecareAllPhoto(c *fiber.Ctx) error {
+	var photos []model.Photo
+	database.Datasource.DB().Where("homecare_id", c.Query("id")).Find(&photos)
+	return c.Status(fiber.StatusOK).JSON(photos)
 }
 
 func SaveHomecare(c *fiber.Ctx) error {
@@ -100,5 +110,54 @@ func SaveHomecare(c *fiber.Ctx) error {
 		"error":   false,
 		"message": "Submited",
 		"data":    homecare,
+	})
+}
+
+func UploadPhoto(c *fiber.Ctx) error {
+	// homecareId = c.FormValue("homecare_id")
+	file, err := c.FormFile("photo")
+
+	if err != nil {
+		log.Println("image upload error --> ", err)
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   false,
+			"message": "Server error",
+			"data":    nil,
+		})
+	}
+
+	// generate new uuid for image name
+	uniqueId := uuid.New()
+	filename := strings.Replace(uniqueId.String(), "-", "", -1)
+
+	// extract image extension from original file filename
+	fileExt := strings.Split(file.Filename, ".")[1]
+
+	// generate image from filename and extension
+	image := fmt.Sprintf("%s.%s", filename, fileExt)
+
+	// save image to ./images dir
+	err = c.SaveFile(file, fmt.Sprintf("./images/%s", image))
+
+	if err != nil {
+		log.Println("image save error --> ", err)
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   false,
+			"message": "Server error",
+			"data":    nil,
+		})
+	}
+
+	database.Datasource.DB().Create(
+		&model.Photo{
+			HomecareID: 1,
+			FileName:   image,
+		},
+	)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Image uploaded successfully",
+		"data":    image,
 	})
 }
