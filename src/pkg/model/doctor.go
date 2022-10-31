@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Doctor struct {
@@ -23,5 +21,5 @@ type Doctor struct {
 	Start                time.Time    `gorm:"type:time" json:"start"`
 	End                  time.Time    `gorm:"type:time" json:"end"`
 	IsSpecialist         bool         `gorm:"type:bool" json:"is_specialist"`
-	gorm.Model           `json:"-"`
+	IsActive             bool         `gorm:"type:bool" json:"is_active"`
 }

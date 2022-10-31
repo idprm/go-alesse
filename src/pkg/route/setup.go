@@ -21,20 +21,34 @@ func Setup(app *fiber.App) {
 
 	diseases := v1.Group("diseases")
 	diseases.Get("/", controller.GetAllDisease)
+	diseases.Get("/:id")
 
 	doctors := v1.Group("doctors")
 	doctors.Get("/", controller.GetAllDoctor)
 	doctors.Get("/specialists", controller.GetAllDoctorSpecialist)
 	doctors.Get("/detail/:username", controller.GetDoctor)
 
-	medicals := v1.Group("medicals")
-	medicals.Get("/", controller.GetAllMedical)
-	medicals.Get("/:id", controller.GetMedical)
-
 	chat := v1.Group("chat")
 	chat.Post("/doctor", controller.ChatDoctor)
 	chat.Delete("/leave", controller.ChatLeave)
 	chat.Delete("/delete", controller.ChatDelete)
+
+	medicalresumes := v1.Group("medicalresumes")
+	medicalresumes.Get("/", controller.GetAllMedicalResume)
+	medicalresumes.Get("/detail/:number", controller.GetMedicalResume)
+	medicalresumes.Post("/", controller.SaveMedicalResume)
+
+	prescriptions := v1.Group("prescriptions")
+	prescriptions.Get("/", controller.GetAllPrescription)
+	prescriptions.Get("/detail/:number", controller.GetPrescription)
+	prescriptions.Post("/", controller.SavePrescription)
+	prescriptions.Get("/medicines", controller.GetAllPrescriptionMedicine)
+	prescriptions.Post("/medicines", controller.SavePrescription)
+
+	homecares := v1.Group("homecares")
+	homecares.Get("/", controller.GetAllHomecare)
+	homecares.Get("/detail/:number", controller.GetHomecare)
+	homecares.Post("/", controller.SaveHomecare)
 
 	/**
 	 * AUTHENTICATED ROUTES

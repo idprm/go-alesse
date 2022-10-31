@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/idprm/go-alesse/src/pkg/common"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	common.Model
+	ID             uint64       `gorm:"primaryKey" json:"id"`
 	HealthcenterID uint64       `json:"-"`
 	Healthcenter   Healthcenter `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Msisdn         string       `gorm:"size:15;unique;not null" json:"msisdn"`
@@ -20,6 +20,7 @@ type User struct {
 	IsVerify       bool         `gorm:"type:bool" json:"is_verify"`
 	IsBpjs         bool         `gorm:"type:bool" json:"is_bpjs"`
 	IsActive       bool         `gorm:"type:bool" json:"is_active"`
+	gorm.Model     `json:"-"`
 }
 
 func New() *User {

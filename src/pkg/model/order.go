@@ -1,14 +1,15 @@
 package model
 
-import "github.com/idprm/go-alesse/src/pkg/common"
+import "gorm.io/gorm"
 
 type Order struct {
-	common.Model
-	UserID   uint64 `json:"-"`
-	User     User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	DoctorID uint   `json:"-"`
-	Doctor   Doctor `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	Number   string `json:"number"`
-	Total    int    `json:"total"`
-	Status   string `gorm:"size:25" json:"status"`
+	ID         uint64 `gorm:"primaryKey" json:"id"`
+	UserID     uint64 `json:"-"`
+	User       User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	DoctorID   uint   `json:"-"`
+	Doctor     Doctor `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Number     string `gorm:"size:25" json:"number"`
+	Total      int    `json:"total"`
+	Status     string `gorm:"size:25" json:"status"`
+	gorm.Model `json:"-"`
 }

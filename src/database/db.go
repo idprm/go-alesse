@@ -76,7 +76,10 @@ func Connect() {
 		&model.Verify{},
 		&model.Doctor{},
 		&model.Chat{},
+		&model.MedicalResume{},
 		&model.Referral{},
+		&model.Prescription{},
+		&model.PrescriptionMedicine{},
 		&model.Homecare{},
 		&model.Sendbird{},
 		&model.Zenziva{},
@@ -109,13 +112,13 @@ func Connect() {
 
 	if resultDisease.RowsAffected == 0 {
 		for i, _ := range diseases {
-			db.Model(&model.Healthcenter{}).Create(&diseases[i])
+			db.Model(&model.Disease{}).Create(&diseases[i])
 		}
 	}
 
 	if resultMedicine.RowsAffected == 0 {
 		for i, _ := range medicines {
-			db.Model(&model.Healthcenter{}).Create(&medicines[i])
+			db.Model(&model.Medicine{}).Create(&medicines[i])
 		}
 	}
 

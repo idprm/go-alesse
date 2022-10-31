@@ -3,13 +3,14 @@ package model
 import (
 	"time"
 
-	"github.com/idprm/go-alesse/src/pkg/common"
+	"gorm.io/gorm"
 )
 
 type Homecare struct {
-	common.Model
+	ID                 uint64 `gorm:"primaryKey" json:"id"`
 	ChatID             uint64 `json:"chat_id"`
 	Chat               Chat
+	Number             string    `gorm:"size:25" json:"number"`
 	EarlyDiagnosis     string    `gorm:"type:text" json:"early_diagnosis"`
 	Reason             string    `gorm:"type:text" json:"reason"`
 	VisitAt            time.Time `gorm:"default:null" json:"visit_at"`
@@ -20,4 +21,5 @@ type Homecare struct {
 	IsVisited          bool      `gorm:"type:boolean;default:false" json:"is_visited"`
 	IsFinished         bool      `gorm:"type:boolean;default:false" json:"is_finished"`
 	IsActive           bool      `gorm:"type:boolean;default:false" json:"is_active"`
+	gorm.Model         `json:"-"`
 }

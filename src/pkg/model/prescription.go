@@ -1,9 +1,14 @@
 package model
 
-import "github.com/idprm/go-alesse/src/pkg/common"
+import "gorm.io/gorm"
 
 type Prescription struct {
-	common.Model
-	ChatID uint64 `json:"chat_id"`
-	Chat   Chat
+	ID              uint64 `gorm:"primaryKey" json:"id"`
+	ChatID          uint64 `json:"chat_id"`
+	Chat            Chat
+	Number          string `gorm:"size:25" json:"number"`
+	Slug            string `gorm:"size:50" json:"slug"`
+	Diagnosis       string `gorm:"type:text" json:"diagnosis"`
+	AllergyMedicine string `gorm:"type:text" json:"allergy_medicine"`
+	gorm.Model      `json:"-"`
 }

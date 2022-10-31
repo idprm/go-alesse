@@ -1,9 +1,9 @@
 package model
 
-import "github.com/idprm/go-alesse/src/pkg/common"
+import "gorm.io/gorm"
 
 type Chat struct {
-	common.Model
+	ID          uint64 `gorm:"primaryKey" json:"id"`
 	OrderID     uint64 `json:"order_id"`
 	Order       Order  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	DoctorID    uint   `json:"-"`
@@ -13,4 +13,5 @@ type Chat struct {
 	ChannelName string `gorm:"size:200" json:"channel_name"`
 	ChannelUrl  string `gorm:"size:200" json:"channel_url"`
 	ShortLink   string `gorm:"size:50" json:"short_link"`
+	gorm.Model  `json:"-"`
 }
