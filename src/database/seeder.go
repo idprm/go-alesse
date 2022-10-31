@@ -21,7 +21,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_OTP_USER",
-		Value: "Berikut adalah kode OTP kamu : *@v1* untuk mulai konsultasi dokter di yellowclinic.com",
+		Value: "Berikut adalah kode OTP kamu : *@v1* untuk mulai konsultasi dokter di a-lesse.com",
 	},
 	{
 		Name:  "PRICE",
@@ -43,74 +43,42 @@ var configs = []model.Config{
 		Name:  "PAGE_ERROR",
 		Value: "-",
 	},
-}
-
-var doctors = []model.Doctor{
+	//** SEED DATA NOTIF WA */
 	{
-		Username:             "dr-ernita",
-		Name:                 "dr. Ernita Rosyanti Dewi",
-		Photo:                "dr-ernita.png",
-		Type:                 "Dokter Umum",
-		Number:               "STR 3121100220145544",
-		Experience:           5,
-		GraduatedFrom:        "Universitas Yarsi, 2013",
-		ConsultationSchedule: "06.00 - 23.00 WIB",
-		PlacePractice:        "Jakarta Timur, DKI Jakarta",
-		Phone:                "6281776736076",
-		Start:                time.Now(),
-		End:                  time.Now(),
+		Name:  "NOTIF_DOCTOR_TO_PHARMACY",
+		Value: "Hello Admin Farmasi @health_center terdapat pengajuan resep obat dari @doctor untuk pasien @patient Cek disini @link",
 	},
 	{
-		Username:             "dr-ayu",
-		Name:                 "dr. Ayu A. Istiana",
-		Photo:                "dr-ayu.png",
-		Type:                 "Dokter Umum",
-		Number:               "STR 3121100220145699",
-		Experience:           7,
-		GraduatedFrom:        "Universitas Yarsi, 2013",
-		ConsultationSchedule: "06.00 - 23.00 WIB",
-		PlacePractice:        "Bogor, Jawa Barat",
-		Phone:                "6281212480644",
-		Start:                time.Now(),
-		End:                  time.Now(),
+		Name:  "NOTIF_PHARMACY_TO_COURIER",
+		Value: "Hello Kurir @courier, terdapat pemintaan pengantaran obat dari Farmasi @pharmacy untuk pasien @patient. Cek disini @link ",
 	},
 	{
-		Username:             "dr-peter",
-		Name:                 "dr. Peter Fernando",
-		Photo:                "dr-peter.png",
-		Type:                 "Dokter Umum",
-		Number:               "STR 6111100120221435",
-		Experience:           3,
-		GraduatedFrom:        "Universitas Tanjungpura, 2019",
-		ConsultationSchedule: "06.00 - 23.00 WIB",
-		PlacePractice:        "Ngabang, Kalimantan Timur",
-		Phone:                "6281776736076",
-		Start:                time.Now(),
-		End:                  time.Now(),
-	},
-}
-
-var clinics = []model.Clinic{
-	{
-		Name:     "Klinik Cepat Sehat Indonesia",
-		Photo:    "yellowclinic.png",
-		Address:  "Jl. Peternakan No.13, RT.5/RW.1, Kp. Tengah, Kec. Kramat jati, Jakarta, Daerah Khusus Ibukota Jakarta 13540",
-		Phone:    "6281281881802",
-		IsActive: true,
+		Name:  "NOTIF_COURIER_TO_PHARMACY",
+		Value: "Hello Admin Farmasi @health_center, Kurir @courier sudah menyelesaikan pengantaran obat ke pasien @patient",
 	},
 	{
-		Name:     "Klinik Cepat Sehat Indonesia",
-		Photo:    "yellowclinic.png",
-		Address:  "Jl. Peternakan No.13, RT.5/RW.1, Kp. Tengah, Kec. Kramat jati, Jakarta, Daerah Khusus Ibukota Jakarta 13540",
-		Phone:    "6281281881802",
-		IsActive: true,
+		Name:  "NOTIF_PHARMACY_TO_PATIENT",
+		Value: "Hello pasien @patient obat Anda sedang disiapkan oleh Farmasi @health_center",
 	},
 	{
-		Name:     "Klinik Cepat Sehat Indonesia",
-		Photo:    "yellowclinic.png",
-		Address:  "Jl. Peternakan No.13, RT.5/RW.1, Kp. Tengah, Kec. Kramat jati, Jakarta, Daerah Khusus Ibukota Jakarta 13540",
-		Phone:    "6281281881802",
-		IsActive: true,
+		Name:  "NOTIF_COURIER_TO_PATIENT",
+		Value: "Hello pasien @patient obat Anda sedang diantarkan oleh Kurir @health_center",
+	},
+	{
+		Name:  "NOTIF_HOMECARE_TO_PATIENT_PROGRESS",
+		Value: "Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.",
+	},
+	{
+		Name:  "NOTIF_HOMECARE_TO_PATIENT_DONE",
+		Value: "Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh.",
+	},
+	{
+		Name:  "NOTIF_DOCTOR_TO_HOMECARE",
+		Value: "Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link",
+	},
+	{
+		Name:  "NOTIF_HOMECARE_TO_HEALTHOFFICE",
+		Value: "Hello Admin Dinkes @admin, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient",
 	},
 }
 
@@ -436,5 +404,87 @@ var healthcenters = []model.Healthcenter{
 		Photo:   "healthcenter.png",
 		Type:    "Non Rawat Inap",
 		Address: "Jl. Toddopuli Raya No 96 Makassar",
+	},
+}
+
+var diseases = []model.Disease{
+	{
+		Name:     "Demam berdarah akibat virus",
+		IsActive: true,
+	},
+	{
+		Name:     "Kejang demam",
+		IsActive: true,
+	},
+	{
+		Name:     "Keracunan makanan",
+		IsActive: true,
+	},
+	{
+		Name:     "Penyakit jantung koroner",
+		IsActive: true,
+	},
+	{
+		Name:     "Penyakit gaya hidup",
+		IsActive: true,
+	},
+}
+
+var medicines = []model.Medicine{
+	{
+		Name:     "Paracetamol",
+		IsActive: true,
+	},
+	{
+		Name:     "Ambroxol",
+		IsActive: true,
+	},
+}
+
+var doctors = []model.Doctor{
+	{
+		HealthcenterID:       1,
+		Username:             "dr-ernita",
+		Name:                 "dr. Ernita Rosyanti Dewi",
+		Photo:                "dr-ernita.png",
+		Type:                 "Dokter Umum",
+		Number:               "STR 3121100220145544",
+		Experience:           5,
+		GraduatedFrom:        "Universitas Yarsi, 2013",
+		ConsultationSchedule: "06.00 - 23.00 WIB",
+		PlacePractice:        "Jakarta Timur, DKI Jakarta",
+		Phone:                "6281776736076",
+		Start:                time.Now(),
+		End:                  time.Now(),
+	},
+	{
+		HealthcenterID:       1,
+		Username:             "dr-ayu",
+		Name:                 "dr. Ayu A. Istiana",
+		Photo:                "dr-ayu.png",
+		Type:                 "Dokter Umum",
+		Number:               "STR 3121100220145699",
+		Experience:           7,
+		GraduatedFrom:        "Universitas Yarsi, 2013",
+		ConsultationSchedule: "06.00 - 23.00 WIB",
+		PlacePractice:        "Bogor, Jawa Barat",
+		Phone:                "6281212480644",
+		Start:                time.Now(),
+		End:                  time.Now(),
+	},
+	{
+		HealthcenterID:       1,
+		Username:             "dr-peter",
+		Name:                 "dr. Peter Fernando",
+		Photo:                "dr-peter.png",
+		Type:                 "Dokter Umum",
+		Number:               "STR 6111100120221435",
+		Experience:           3,
+		GraduatedFrom:        "Universitas Tanjungpura, 2019",
+		ConsultationSchedule: "06.00 - 23.00 WIB",
+		PlacePractice:        "Ngabang, Kalimantan Timur",
+		Phone:                "6281776736076",
+		Start:                time.Now(),
+		End:                  time.Now(),
 	},
 }

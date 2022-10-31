@@ -70,12 +70,14 @@ func Connect() {
 	db.AutoMigrate(
 		&model.Config{},
 		&model.Healthcenter{},
+		&model.Disease{},
+		&model.Medicine{},
 		&model.User{},
 		&model.Verify{},
 		&model.Doctor{},
-		&model.Clinic{},
 		&model.Chat{},
-		&model.Medical{},
+		&model.Referral{},
+		&model.Homecare{},
 		&model.Sendbird{},
 		&model.Zenziva{},
 	)
@@ -83,13 +85,15 @@ func Connect() {
 	// TODO: Add seeders
 	var config []model.Config
 	var healthcenter []model.Healthcenter
+	var disease []model.Disease
+	var medicine []model.Medicine
 	var doctor []model.Doctor
-	var clinic []model.Clinic
 
 	resultConfig := db.Find(&config)
 	resultHealthCenter := db.Find(&healthcenter)
+	resultDisease := db.Find(&disease)
+	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
-	resultClinic := db.Find(&clinic)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
@@ -103,15 +107,21 @@ func Connect() {
 		}
 	}
 
-	if resultDoctor.RowsAffected == 0 {
-		for i, _ := range doctors {
-			db.Model(&model.Doctor{}).Create(&doctors[i])
+	if resultDisease.RowsAffected == 0 {
+		for i, _ := range diseases {
+			db.Model(&model.Healthcenter{}).Create(&diseases[i])
 		}
 	}
 
-	if resultClinic.RowsAffected == 0 {
-		for i, _ := range clinics {
-			db.Model(&model.Clinic{}).Create(&clinics[i])
+	if resultMedicine.RowsAffected == 0 {
+		for i, _ := range medicines {
+			db.Model(&model.Healthcenter{}).Create(&medicines[i])
+		}
+	}
+
+	if resultDoctor.RowsAffected == 0 {
+		for i, _ := range doctors {
+			db.Model(&model.Doctor{}).Create(&doctors[i])
 		}
 	}
 

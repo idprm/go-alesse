@@ -19,9 +19,13 @@ func Setup(app *fiber.App) {
 	healthcenters.Get("/", controller.GetAllHealthCenter)
 	healthcenters.Get("/:code", controller.GetHealthCenter)
 
+	diseases := v1.Group("diseases")
+	diseases.Get("/", controller.GetAllDisease)
+
 	doctors := v1.Group("doctors")
 	doctors.Get("/", controller.GetAllDoctor)
-	doctors.Get("/:username", controller.GetDoctor)
+	doctors.Get("/specialists", controller.GetAllDoctorSpecialist)
+	doctors.Get("/detail/:username", controller.GetDoctor)
 
 	medicals := v1.Group("medicals")
 	medicals.Get("/", controller.GetAllMedical)
