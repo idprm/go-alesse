@@ -21,7 +21,6 @@ func Setup(app *fiber.App) {
 
 	diseases := v1.Group("diseases")
 	diseases.Get("/", controller.GetAllDisease)
-	diseases.Get("/:id")
 
 	doctors := v1.Group("doctors")
 	doctors.Get("/", controller.GetAllDoctor)
