@@ -14,10 +14,11 @@ type Homecare struct {
 	EarlyDiagnosis     string    `gorm:"type:text" json:"early_diagnosis"`
 	Reason             string    `gorm:"type:text" json:"reason"`
 	VisitAt            time.Time `gorm:"default:null" json:"visit_at"`
-	Slug               string    `gorm:"size:50" json:"slug"`
+	Slug               string    `gorm:"size:50;unique" json:"slug"`
 	Treatment          string    `gorm:"type:text" json:"treatment"`
 	FinalDiagnosis     string    `gorm:"type:text" json:"final_diagnosis"`
 	DrugAdministration string    `gorm:"type:text" json:"drug_administration"`
+	IsSubmited         bool      `gorm:"type:boolean;default:false" json:"is_submited"`
 	IsVisited          bool      `gorm:"type:boolean;default:false" json:"is_visited"`
 	IsFinished         bool      `gorm:"type:boolean;default:false" json:"is_finished"`
 	IsActive           bool      `gorm:"type:boolean;default:false" json:"is_active"`

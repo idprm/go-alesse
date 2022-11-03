@@ -10,5 +10,6 @@ type MedicalResume struct {
 	DiseaseID  uint    `json:"disease_id"`
 	Disease    Disease `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Diagnosis  string  `gorm:"type:text" json:"diagnosis"`
+	IsSubmited bool    `gorm:"type:boolean;default:false" json:"is_submited"`
 	gorm.Model `json:"-"`
 }

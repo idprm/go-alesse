@@ -3,3 +3,4 @@
 .env.stagging
 /src/server/*.yaml
 app.env
+go-alesse
