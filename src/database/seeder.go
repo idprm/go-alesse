@@ -432,11 +432,57 @@ var diseases = []model.Disease{
 
 var medicines = []model.Medicine{
 	{
+		Type:     "Tablet",
 		Name:     "Paracetamol",
+		Unit:     "mg",
 		IsActive: true,
 	},
 	{
-		Name:     "Ambroxol",
+		Type:     "Tablet",
+		Name:     "Cetrizine",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Kapsul",
+		Name:     "Lansoprazole",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Tablet",
+		Name:     "Amoxicillin",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Kapsul",
+		Name:     "Omeprazole",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Tablet",
+		Name:     "Ranitidine",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Tablet",
+		Name:     "Cefixime",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Tablet",
+		Name:     "Loperamide",
+		Unit:     "mg",
+		IsActive: true,
+	},
+	{
+		Type:     "Tablet",
+		Name:     "Aminophylline",
+		Unit:     "mg",
 		IsActive: true,
 	},
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/idprm/go-alesse/src/database"
+	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/model"
 )
 
@@ -24,6 +25,10 @@ type HomecareRequest struct {
 	FinalDiagnosis     string `query:"final_diagnosis" json:"final_diagnosis"`
 	DrugAdministration string `query:"drug_administration" json:"drug_administration"`
 }
+
+const (
+	valDoctorToHomecare = "NOTIF_DOCTOR_TO_HOMECARE"
+)
 
 func ValidateHomecare(req HomecareRequest) []*ErrorResponse {
 	var errors []*ErrorResponse
@@ -52,6 +57,12 @@ func GetHomecare(c *fiber.Ctx) error {
 	channelUrl := c.Query("channel_url")
 	var homecare model.Homecare
 	database.Datasource.DB().Where("slug", channelUrl).First(&homecare)
+	return c.Status(fiber.StatusOK).JSON(homecare)
+}
+
+func GetHomecareByDoctor(c *fiber.Ctx) error {
+	var homecare model.Homecare
+	database.Datasource.DB().Where("slug", c.Params("slug")).Preload("Chat.Doctor").Preload("Chat.User").First(&homecare)
 	return c.Status(fiber.StatusOK).JSON(homecare)
 }
 
@@ -84,6 +95,28 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 	var homecare model.Homecare
 	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&homecare)
+
+	// send notif
+	var notifDoctorToHomecare model.Config
+	database.Datasource.DB().Where("name", valDoctorToHomecare).First(&notifDoctorToHomecare)
+	replaceMessage := strings.Replace(notifDoctorToHomecare.Value, "@doctor", "", 1)
+
+	zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(homecare.Chat.User.Msisdn, replaceMessage)
+	if err != nil {
+		// util.Log.WithFields(logrus.Fields{"error": err.Error()}).Error(valDoctorToHomecare)
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(
+		&model.Zenziva{
+			Msisdn:   homecare.Chat.User.Msisdn,
+			Action:   valDoctorToHomecare,
+			Response: zenzivaDoctorToHomecare,
+		},
+	)
 
 	visitAt, _ := time.Parse("2006-01-02 15:04:05", req.VisitAt)
 

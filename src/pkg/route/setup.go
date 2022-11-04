@@ -12,8 +12,11 @@ func Setup(app *fiber.App) {
 	app.Get("/", controller.FrontHandler)
 
 	v1 := app.Group("v1")
-	v1.Post("auth", controller.AuthHandler)
-	v1.Post("verify", controller.VerifyHandler)
+	auth := v1.Group("auth")
+
+	auth.Post("login", controller.LoginHandler)
+	auth.Post("verify", controller.VerifyHandler)
+	auth.Post("register", controller.RegisterHandler)
 
 	healthcenters := v1.Group("healthcenters")
 	healthcenters.Get("/", controller.GetAllHealthCenter)
@@ -47,6 +50,7 @@ func Setup(app *fiber.App) {
 	homecares := v1.Group("homecares")
 	homecares.Get("/", controller.GetAllHomecare)
 	homecares.Get("/detail/:number", controller.GetHomecare)
+	homecares.Get("/doctor/:slug", controller.GetHomecareByDoctor)
 	homecares.Post("/", controller.SaveHomecare)
 	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
 	homecares.Post("/photos", controller.UploadPhoto)
