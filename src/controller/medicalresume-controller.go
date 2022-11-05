@@ -8,9 +8,13 @@ import (
 )
 
 type MedicalResumeRequest struct {
-	ChatID    uint64 `query:"chat_id" validate:"required" json:"chat_id"`
-	DiseaseID uint   `query:"disease_id" json:"disease_id"`
-	Diagnosis string `query:"diagnosis" json:"diagnosis"`
+	ChatID         uint64 `query:"chat_id" validate:"required" json:"chat_id"`
+	Weight         uint   `query:"weight" validate:"required" json:"weight"`
+	PainComplaints string `query:"pain_complaints" json:"pain_complaints"`
+	Diagnosis      string `query:"diagnosis" json:"diagnosis"`
+	DiseaseID      uint   `query:"disease_id"  validate:"required" json:"disease_id"`
+	Slug           string `query:"slug" json:"slug"`
+	IsSubmited     bool   `query:"is_submited" json:"is_submited"`
 }
 
 func ValidateMedicalResume(req MedicalResumeRequest) []*ErrorResponse {
@@ -36,7 +40,7 @@ func GetAllMedicalResume(c *fiber.Ctx) error {
 
 func GetMedicalResume(c *fiber.Ctx) error {
 	var medicalresume model.MedicalResume
-	database.Datasource.DB().Where("number", c.Query("number")).First(&medicalresume)
+	database.Datasource.DB().Where("slug", c.Query("slug")).First(&medicalresume)
 	return c.Status(fiber.StatusOK).JSON(medicalresume)
 }
 
@@ -63,19 +67,27 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	}
 
 	var medicalresume model.MedicalResume
-	existResume := database.Datasource.DB().Where("chat_id", req.ChatID)
+	existResume := database.Datasource.DB().Where("chat_id", req.ChatID).First(&medicalresume)
 	if existResume.RowsAffected == 0 {
 		database.Datasource.DB().Create(
 			&model.MedicalResume{
-				ChatID:    req.ChatID,
-				Number:    "",
-				DiseaseID: req.DiseaseID,
-				Diagnosis: req.Diagnosis,
+				ChatID:         req.ChatID,
+				Weight:         req.Weight,
+				PainComplaints: req.PainComplaints,
+				Diagnosis:      req.Diagnosis,
+				Number:         "",
+				Slug:           req.Slug,
+				DiseaseID:      req.DiseaseID,
+				IsSubmited:     req.IsSubmited,
 			},
 		)
 	} else {
-		medicalresume.DiseaseID = req.DiseaseID
+		medicalresume.Weight = req.Weight
+		medicalresume.PainComplaints = req.PainComplaints
 		medicalresume.Diagnosis = req.Diagnosis
+		medicalresume.Slug = req.Slug
+		medicalresume.DiseaseID = req.DiseaseID
+		medicalresume.IsSubmited = req.IsSubmited
 		database.Datasource.DB().Save(&medicalresume)
 	}
 

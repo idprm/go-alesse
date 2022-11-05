@@ -37,7 +37,7 @@ func Setup(app *fiber.App) {
 
 	medicalresumes := v1.Group("medicalresumes")
 	medicalresumes.Get("/", controller.GetAllMedicalResume)
-	medicalresumes.Get("/detail/:number", controller.GetMedicalResume)
+	medicalresumes.Get("/detail/:slug", controller.GetMedicalResume)
 	medicalresumes.Post("/", controller.SaveMedicalResume)
 
 	prescriptions := v1.Group("prescriptions")
