@@ -10,20 +10,30 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/idprm/go-alesse/src/database"
-	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/model"
 )
 
 type HomecareRequest struct {
-	ChatID             uint64 `query:"chat_id" validate:"required" json:"chat_id"`
-	EarlyDiagnosis     string `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
-	Reason             string `query:"reason" validate:"required" json:"reason"`
-	VisitAt            string `query:"visit_at" validate:"required" json:"visit_at"`
-	Slug               string `query:"slug" json:"slug"`
-	IsSubmited         bool   `query:"is_submited" json:"is_submited"`
-	Treatment          string `query:"treatment" json:"treatment"`
-	FinalDiagnosis     string `query:"final_diagnosis" json:"final_diagnosis"`
-	DrugAdministration string `query:"drug_administration" json:"drug_administration"`
+	ChatID             uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
+	EarlyDiagnosis     string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
+	Reason             string                    `query:"reason" validate:"required" json:"reason"`
+	VisitAt            string                    `query:"visit_at" validate:"required" json:"visit_at"`
+	Slug               string                    `query:"slug" json:"slug"`
+	Data               []HomecareMedicineRequest `query:"data" json:"data"`
+	IsSubmited         bool                      `query:"is_submited" json:"is_submited"`
+	Treatment          string                    `query:"treatment" json:"treatment"`
+	FinalDiagnosis     string                    `query:"final_diagnosis" json:"final_diagnosis"`
+	DrugAdministration string                    `query:"drug_administration" json:"drug_administration"`
+}
+
+type HomecareMedicineRequest struct {
+	HomecareID  uint64 `query:"homecare_id" json:"homecare_id"`
+	MedicineID  uint64 `query:"medicine_id" json:"medicine_id"`
+	Name        string `query:"medicine_name" json:"medicine_name"`
+	Qty         uint   `query:"qty" json:"qty"`
+	Rule        string `query:"rule" json:"rule"`
+	Time        string `query:"time" json:"time"`
+	Description string `query:"description" json:"description"`
 }
 
 const (
@@ -97,43 +107,57 @@ func SaveHomecare(c *fiber.Ctx) error {
 	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&homecare)
 
 	// send notif
-	var notifDoctorToHomecare model.Config
-	database.Datasource.DB().Where("name", valDoctorToHomecare).First(&notifDoctorToHomecare)
-	replaceMessage := strings.Replace(notifDoctorToHomecare.Value, "@doctor", "", 1)
+	// var notifDoctorToHomecare model.Config
+	// database.Datasource.DB().Where("name", valDoctorToHomecare).First(&notifDoctorToHomecare)
+	// replaceMessage := strings.Replace(notifDoctorToHomecare.Value, "@doctor", "", 1)
 
-	zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(homecare.Chat.User.Msisdn, replaceMessage)
-	if err != nil {
-		// util.Log.WithFields(logrus.Fields{"error": err.Error()}).Error(valDoctorToHomecare)
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			"error":   true,
-			"message": err.Error(),
-		})
-	}
-	// insert to zenziva
-	database.Datasource.DB().Create(
-		&model.Zenziva{
-			Msisdn:   homecare.Chat.User.Msisdn,
-			Action:   valDoctorToHomecare,
-			Response: zenzivaDoctorToHomecare,
-		},
-	)
+	// zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(homecare.Chat.User.Msisdn, replaceMessage)
+	// if err != nil {
+	// 	// util.Log.WithFields(logrus.Fields{"error": err.Error()}).Error(valDoctorToHomecare)
+	// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+	// 		"error":   true,
+	// 		"message": err.Error(),
+	// 	})
+	// }
+	// // insert to zenziva
+	// database.Datasource.DB().Create(
+	// 	&model.Zenziva{
+	// 		Msisdn:   homecare.Chat.User.Msisdn,
+	// 		Action:   valDoctorToHomecare,
+	// 		Response: zenzivaDoctorToHomecare,
+	// 	},
+	// )
 
-	visitAt, _ := time.Parse("2006-01-02 15:04:05", req.VisitAt)
+	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
 
 	if isExist.RowsAffected == 0 {
-		database.Datasource.DB().Create(
-			&model.Homecare{
-				ChatID:             req.ChatID,
-				EarlyDiagnosis:     req.EarlyDiagnosis,
-				Reason:             req.Reason,
-				VisitAt:            visitAt,
-				Slug:               req.Slug,
-				IsSubmited:         req.IsSubmited,
-				Treatment:          req.Treatment,
-				FinalDiagnosis:     req.FinalDiagnosis,
-				DrugAdministration: req.DrugAdministration,
-			},
-		)
+		homecare := model.Homecare{
+			ChatID:             req.ChatID,
+			EarlyDiagnosis:     req.EarlyDiagnosis,
+			Reason:             req.Reason,
+			VisitAt:            visitAt,
+			Slug:               req.Slug,
+			IsSubmited:         req.IsSubmited,
+			Treatment:          req.Treatment,
+			FinalDiagnosis:     req.FinalDiagnosis,
+			DrugAdministration: req.DrugAdministration,
+		}
+		database.Datasource.DB().Create(&homecare)
+
+		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
+
+		for _, v := range req.Data {
+			database.Datasource.DB().Create(&model.HomecareMedicine{
+				HomecareID:  homecare.ID,
+				MedicineID:  v.MedicineID,
+				Name:        v.Name,
+				Quantity:    v.Qty,
+				Rule:        v.Rule,
+				Time:        v.Time,
+				Description: v.Description,
+			})
+		}
+
 	} else {
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
 		homecare.Reason = req.Reason
@@ -143,6 +167,20 @@ func SaveHomecare(c *fiber.Ctx) error {
 		homecare.FinalDiagnosis = req.FinalDiagnosis
 		homecare.DrugAdministration = req.DrugAdministration
 		database.Datasource.DB().Save(&homecare)
+
+		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
+
+		for _, v := range req.Data {
+			database.Datasource.DB().Create(&model.HomecareMedicine{
+				HomecareID:  homecare.ID,
+				MedicineID:  v.MedicineID,
+				Name:        v.Name,
+				Quantity:    v.Qty,
+				Rule:        v.Rule,
+				Time:        v.Time,
+				Description: v.Description,
+			})
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

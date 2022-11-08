@@ -75,12 +75,14 @@ func Connect() {
 		&model.User{},
 		&model.Verify{},
 		&model.Doctor{},
+		&model.Officer{},
 		&model.Chat{},
 		&model.MedicalResume{},
 		&model.Referral{},
 		&model.Prescription{},
 		&model.PrescriptionMedicine{},
 		&model.Homecare{},
+		&model.HomecareMedicine{},
 		&model.Sendbird{},
 		&model.Zenziva{},
 	)
@@ -91,12 +93,14 @@ func Connect() {
 	var disease []model.Disease
 	var medicine []model.Medicine
 	var doctor []model.Doctor
+	var officer []model.Officer
 
 	resultConfig := db.Find(&config)
 	resultHealthCenter := db.Find(&healthcenter)
 	resultDisease := db.Find(&disease)
 	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
+	resultOfficer := db.Find(&officer)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
@@ -125,6 +129,12 @@ func Connect() {
 	if resultDoctor.RowsAffected == 0 {
 		for i, _ := range doctors {
 			db.Model(&model.Doctor{}).Create(&doctors[i])
+		}
+	}
+
+	if resultOfficer.RowsAffected == 0 {
+		for i, _ := range officers {
+			db.Model(&model.Officer{}).Create(&officers[i])
 		}
 	}
 

@@ -9,15 +9,7 @@ import (
 func GetAllDoctor(c *fiber.Ctx) error {
 
 	var doctors []model.Doctor
-	database.Datasource.DB().Where("is_specialist", false).Where("is_active", true).Order("end desc").Find(&doctors)
-
-	return c.Status(fiber.StatusOK).JSON(doctors)
-}
-
-func GetAllDoctorSpecialist(c *fiber.Ctx) error {
-
-	var doctors []model.Doctor
-	database.Datasource.DB().Where("is_specialist", true).Where("is_active", true).Order("name").Find(&doctors)
+	database.Datasource.DB().Where("is_active", true).Order("end desc").Find(&doctors)
 
 	return c.Status(fiber.StatusOK).JSON(doctors)
 }

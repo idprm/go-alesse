@@ -557,3 +557,22 @@ var doctors = []model.Doctor{
 		IsActive:             true,
 	},
 }
+
+var officers = []model.Officer{
+	{
+		HealthcenterID: 1,
+		Type:           "HOMECARE",
+		Name:           "Andi",
+		Photo:          "officer_homecare.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+	{
+		HealthcenterID: 1,
+		Type:           "PHARMACY",
+		Name:           "Juli",
+		Photo:          "officer_pharmacy.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+}

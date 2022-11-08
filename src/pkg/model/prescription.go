@@ -8,6 +8,7 @@ type Prescription struct {
 	Chat            Chat
 	Number          string `gorm:"size:25" json:"number"`
 	Slug            string `gorm:"size:50" json:"slug"`
+	PainComplaint   string `gorm:"type:text" json:"pain_complaint"`
 	Diagnosis       string `gorm:"type:text" json:"diagnosis"`
 	AllergyMedicine string `gorm:"type:text" json:"allergy_medicine"`
 	IsSubmited      bool   `gorm:"type:boolean;default:false" json:"is_submited"`

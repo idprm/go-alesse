@@ -25,10 +25,17 @@ func Setup(app *fiber.App) {
 	diseases := v1.Group("diseases")
 	diseases.Get("/", controller.GetAllDisease)
 
+	medicines := v1.Group("medicines")
+	medicines.Get("/", controller.GetAllMedicine)
+	medicines.Get("/:id", controller.GetMedicine)
+
 	doctors := v1.Group("doctors")
 	doctors.Get("/", controller.GetAllDoctor)
-	doctors.Get("/specialists", controller.GetAllDoctorSpecialist)
 	doctors.Get("/detail/:username", controller.GetDoctor)
+
+	officers := v1.Group("officers")
+	officers.Get("/type/:type", controller.GetAllOfficer)
+	officers.Get("/phone/:phone", controller.GetOfficer)
 
 	chat := v1.Group("chat")
 	chat.Post("/doctor", controller.ChatDoctor)

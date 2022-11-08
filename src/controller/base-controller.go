@@ -18,6 +18,12 @@ func GetAllMedicine(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&medicines)
 }
 
+func GetMedicine(c *fiber.Ctx) error {
+	var medicine model.Medicine
+	database.Datasource.DB().Where("id", c.Params("id")).Where("is_active", true).First(&medicine)
+	return c.Status(fiber.StatusOK).JSON(&medicine)
+}
+
 func GetAllHealthCenter(c *fiber.Ctx) error {
 	var healthcenters []model.Healthcenter
 	database.Datasource.DB().Order("name asc").Find(&healthcenters)

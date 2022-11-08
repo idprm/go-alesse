@@ -8,14 +8,17 @@ import (
 )
 
 type PrescriptionRequest struct {
-	ChatID          uint64 `query:"chat_id" validate:"required" json:"chat_id"`
-	AllergyMedicine string `query:"allergy_medicine" json:"allergy_medicine"`
-	Diagnosis       string `query:"diagnosis" json:"diagnosis"`
+	ChatID          uint64                        `query:"chat_id" validate:"required" json:"chat_id"`
+	AllergyMedicine string                        `query:"allergy_medicine" json:"allergy_medicine"`
+	Diagnosis       string                        `query:"diagnosis" json:"diagnosis"`
+	Data            []PrescriptionMedicineRequest `query:"data" json:"data"`
 }
 
 type PrescriptionMedicineRequest struct {
-	PrescriptionID uint64 `query:"prescription_id" validate:"required" json:"prescription_id"`
-	MedicineID     uint   `query:"medicine_id" validate:"required" json:"medicine_id"`
+	PrescriptionID uint64 `query:"prescription_id" json:"prescription_id"`
+	MedicineID     uint64 `query:"medicine_id" json:"medicine_id"`
+	Name           string `query:"medicine_name" json:"medicine_name"`
+	Qty            uint   `query:"qty" json:"qty"`
 }
 
 func ValidatePrescription(req PrescriptionRequest) []*ErrorResponse {
@@ -76,17 +79,39 @@ func SavePrescription(c *fiber.Ctx) error {
 	existPrescription := database.Datasource.DB().Where("chat_id", req.ChatID).First(&prescription)
 
 	if existPrescription.RowsAffected == 0 {
-		database.Datasource.DB().Create(
-			&model.Prescription{
-				ChatID:          req.ChatID,
-				AllergyMedicine: req.AllergyMedicine,
-				Diagnosis:       req.Diagnosis,
-			},
-		)
+
+		prescription := model.Prescription{
+			ChatID:          req.ChatID,
+			AllergyMedicine: req.AllergyMedicine,
+			Diagnosis:       req.Diagnosis,
+		}
+		database.Datasource.DB().Create(&prescription)
+
+		database.Datasource.DB().Where("prescription_id", prescription.ID).Delete(&model.PrescriptionMedicine{})
+
+		for _, v := range req.Data {
+			database.Datasource.DB().Create(&model.PrescriptionMedicine{
+				PrescriptionID: prescription.ID,
+				MedicineID:     v.MedicineID,
+				Name:           v.Name,
+				Quantity:       v.Qty,
+			})
+		}
 	} else {
 		prescription.AllergyMedicine = req.AllergyMedicine
 		prescription.Diagnosis = req.Diagnosis
 		database.Datasource.DB().Save(&prescription)
+
+		database.Datasource.DB().Where("prescription_id", prescription.ID).Delete(&model.PrescriptionMedicine{})
+
+		for _, v := range req.Data {
+			database.Datasource.DB().Create(&model.PrescriptionMedicine{
+				PrescriptionID: prescription.ID,
+				MedicineID:     v.MedicineID,
+				Name:           v.Name,
+				Quantity:       v.Qty,
+			})
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
