@@ -13,6 +13,6 @@ type MedicalResume struct {
 	Weight         uint    `gorm:"size:5" json:"weight"`
 	PainComplaints string  `gorm:"type:text" json:"pain_complaints"`
 	Diagnosis      string  `gorm:"type:text" json:"diagnosis"`
-	IsSubmited     bool    `gorm:"type:boolean;default:false" json:"is_submited"`
+	IsSubmited     bool    `gorm:"type:bool;default:false" json:"is_submited"`
 	gorm.Model     `json:"-"`
 }

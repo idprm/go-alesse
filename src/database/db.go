@@ -76,6 +76,8 @@ func Connect() {
 		&model.Verify{},
 		&model.Doctor{},
 		&model.Officer{},
+		&model.Apothecary{},
+		&model.Courier{},
 		&model.Chat{},
 		&model.MedicalResume{},
 		&model.Referral{},
@@ -83,6 +85,10 @@ func Connect() {
 		&model.PrescriptionMedicine{},
 		&model.Homecare{},
 		&model.HomecareMedicine{},
+		&model.Pharmacy{},
+		&model.Treatment{},
+		&model.Shipment{},
+		&model.Feedback{},
 		&model.Sendbird{},
 		&model.Zenziva{},
 	)
@@ -94,6 +100,8 @@ func Connect() {
 	var medicine []model.Medicine
 	var doctor []model.Doctor
 	var officer []model.Officer
+	var apothecary []model.Apothecary
+	var courier []model.Courier
 
 	resultConfig := db.Find(&config)
 	resultHealthCenter := db.Find(&healthcenter)
@@ -101,6 +109,8 @@ func Connect() {
 	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
 	resultOfficer := db.Find(&officer)
+	resultApothecary := db.Find(&apothecary)
+	resultCourier := db.Find(&courier)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
@@ -135,6 +145,18 @@ func Connect() {
 	if resultOfficer.RowsAffected == 0 {
 		for i, _ := range officers {
 			db.Model(&model.Officer{}).Create(&officers[i])
+		}
+	}
+
+	if resultApothecary.RowsAffected == 0 {
+		for i, _ := range apothecaries {
+			db.Model(&model.Apothecary{}).Create(&apothecaries[i])
+		}
+	}
+
+	if resultCourier.RowsAffected == 0 {
+		for i, _ := range couriers {
+			db.Model(&model.Courier{}).Create(&couriers[i])
 		}
 	}
 

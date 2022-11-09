@@ -561,17 +561,49 @@ var doctors = []model.Doctor{
 var officers = []model.Officer{
 	{
 		HealthcenterID: 1,
-		Type:           "HOMECARE",
 		Name:           "Andi",
-		Photo:          "officer_homecare.png",
+		Photo:          "officer.png",
 		Phone:          "081299708787",
 		IsActive:       true,
 	},
 	{
 		HealthcenterID: 1,
-		Type:           "PHARMACY",
 		Name:           "Juli",
-		Photo:          "officer_pharmacy.png",
+		Photo:          "officer.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+}
+
+var apothecaries = []model.Courier{
+	{
+		HealthcenterID: 1,
+		Name:           "Dian",
+		Photo:          "pharmacy.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+	{
+		HealthcenterID: 1,
+		Name:           "Dony",
+		Photo:          "pharmacy.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+}
+
+var couriers = []model.Courier{
+	{
+		HealthcenterID: 1,
+		Name:           "Dian",
+		Photo:          "courier.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+	{
+		HealthcenterID: 1,
+		Name:           "Dian",
+		Photo:          "courier.png",
 		Phone:          "081299708787",
 		IsActive:       true,
 	},

@@ -405,3 +405,235 @@ func SendbirdAutoMessageDoctor(channel string, doctor model.Doctor, user model.U
 
 	return string([]byte(body)), nil
 }
+
+/**
+ * Referral
+ */
+func SendbirdCreateSpecialist(specialist model.Doctor) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users"
+
+	userId := specialist.Phone
+	nickName := specialist.Name
+
+	data := User{
+		UserId:     userId,
+		Nickname:   nickName,
+		ProfileUrl: "https://www.a-lesse.com/images/logo/logo.png",
+	}
+
+	payload, _ := json.Marshal(data)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
+	req.Header.Set("Content-Type", "application/json; charset=utf8")
+
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	return string([]byte(body)), nil
+}
+
+func SendbirdGetSpecialist(specialist model.Doctor) (string, bool, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users/" + specialist.Phone
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
+	req.Header.Set("Content-Type", "application/json; charset=utf8")
+
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	var errorResponse ErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+
+	return string([]byte(body)), errorResponse.Error, nil
+}
+
+func SendbirdReferralCreateGroupChannel(specialist model.Doctor, doctor model.Doctor) (string, string, string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels"
+
+	users := []string{doctor.Username, specialist.Phone}
+	operators := []string{"alesse"}
+
+	now := time.Now()
+	date := now.Format("200601021504")
+
+	group := Group{
+		Name:        specialist.Name + " - " + doctor.Name,
+		ChannelUrl:  specialist.Phone + "_" + date,
+		ChannelType: "group_messaging",
+		CustomType:  "chat_with_specialist",
+		UserIds:     users,
+		InviterId:   "alesse",
+		OperatorIds: operators,
+	}
+
+	payload, _ := json.Marshal(group)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+
+	if err != nil {
+		return "", "", "", errors.New(err.Error())
+	}
+
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
+	req.Header.Set("Content-Type", "application/json; charset=utf8")
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return "", "", "", errors.New(err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	type resGroup struct {
+		Name       string `json:"name"`
+		ChannelUrl string `json:"channel_url"`
+	}
+
+	var result resGroup
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", "", errors.New(err.Error())
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", "", "", errors.New(err.Error())
+	}
+
+	return string([]byte(body)), result.Name, result.ChannelUrl, nil
+}
+
+func SendbirdReferralGetGroupChannel(referral model.Referral) (string, bool, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + referral.ChannelUrl
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
+	req.Header.Set("Content-Type", "application/json; charset=utf8")
+
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", true, errors.New(err.Error())
+	}
+
+	var errorResponse ErrorResponse
+
+	return string([]byte(body)), errorResponse.Error, nil
+}
+
+func SendbirdReferralDeleteGroupChannel(channel model.Referral) (string, error) {
+	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels/" + channel.ChannelUrl
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Api-Token", config.ViperEnv("SB_API_TOKEN"))
+	req.Header.Set("Content-Type", "application/json; charset=utf8")
+
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+
+	return string([]byte(body)), nil
+}

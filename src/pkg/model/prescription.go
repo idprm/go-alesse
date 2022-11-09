@@ -11,6 +11,6 @@ type Prescription struct {
 	PainComplaint   string `gorm:"type:text" json:"pain_complaint"`
 	Diagnosis       string `gorm:"type:text" json:"diagnosis"`
 	AllergyMedicine string `gorm:"type:text" json:"allergy_medicine"`
-	IsSubmited      bool   `gorm:"type:boolean;default:false" json:"is_submited"`
+	IsSubmited      bool   `gorm:"type:bool;default:false" json:"is_submited"`
 	gorm.Model      `json:"-"`
 }

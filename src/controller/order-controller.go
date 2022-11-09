@@ -28,6 +28,11 @@ type OrderRequest struct {
 	DoctorID int    `json:"doctor_id"`
 }
 
+type ReferralRequest struct {
+	DoctorID     int `json:"doctor_id"`
+	SpecialistID int `json:"specialist_id"`
+}
+
 func OrderChat(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 
@@ -54,6 +59,7 @@ func OrderChat(c *fiber.Ctx) error {
 	resultOrder := database.Datasource.DB().
 		Where("user_id", user.ID).
 		Where("doctor_id", doctor.ID).
+		Where("DATE(created_at) = DATE(?)", time.Now()).
 		First(&order)
 
 	finishUrl := config.ViperEnv("APP_HOST") + "/chat"
@@ -95,6 +101,75 @@ func OrderChat(c *fiber.Ctx) error {
 			"status":       fiber.StatusOK,
 		})
 	}
+}
+
+func ReferralChat(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	req := new(ReferralRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	var doctor model.Doctor
+	database.Datasource.DB().Where("id", req.DoctorID).Where("is_specialist", false).First(&doctor)
+
+	var specialist model.Doctor
+	database.Datasource.DB().Where("id", req.SpecialistID).Where("is_specialist", true).First(&specialist)
+
+	/**
+	 * Check Order
+	 */
+	var referral model.Referral
+	resultReferral := database.Datasource.DB().
+		Where("doctor_id", doctor.ID).
+		Where("doctor_specialist_id", specialist.ID).
+		Where("DATE(created_at) = DATE(?)", time.Now()).
+		First(&referral)
+
+	finishUrl := config.ViperEnv("APP_HOST") + "/specialist/chat"
+
+	if resultReferral.RowsAffected == 0 {
+		/**
+		 * INSERT TO Referral
+		 */
+		database.Datasource.DB().Create(&model.Referral{
+			DoctorSpecialistID: specialist.ID,
+			DoctorID:           doctor.ID,
+		})
+
+		/**
+		 * SENDBIRD PROCESS
+		 */
+		// err := sendbirdProcess(user.ID, doctor.ID)
+		// if err != nil {
+		// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+		// 		"error":   true,
+		// 		"message": err.Error(),
+		// 		"status":  fiber.StatusBadGateway,
+		// 	})
+		// }
+
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":        false,
+			"message":      "Created Successfull",
+			"redirect_url": finishUrl,
+			"status":       fiber.StatusCreated,
+		})
+	} else {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error":        false,
+			"message":      "Already chat",
+			"redirect_url": finishUrl,
+			"status":       fiber.StatusOK,
+		})
+	}
+
 }
 
 func sendbirdProcess(userId uint64, doctorId uint) error {
@@ -225,6 +300,52 @@ func sendbirdProcess(userId uint64, doctorId uint) error {
 			Msisdn:   order.User.Msisdn,
 			Action:   actionCreateMessage,
 			Response: autoMessageDoctor,
+		})
+	}
+
+	return nil
+}
+
+func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
+
+	var referral model.Referral
+	database.Datasource.DB().
+		Where("doctor_specialist_id", specialistId).
+		Where("doctor_id", doctorId).
+		Where("DATE(created_at) = DATE(?)", time.Now()).
+		Preload("Doctor").
+		Preload("DoctorSpecialist").
+		First(&referral)
+
+		/**
+		 * Check User Sendbird
+		 */
+	getSpecialist, isSpecialist, err := handler.SendbirdGetSpecialist(referral.DoctorSpecialist)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	/**
+	 * Add User Sendbird
+	 */
+	database.Datasource.DB().Create(&model.Sendbird{
+		Msisdn:   referral.DoctorSpecialist.Phone,
+		Action:   actionCheckUser,
+		Response: getSpecialist,
+	})
+
+	if isSpecialist == true {
+
+		// create user sendbird
+		createUser, err := handler.SendbirdCreateSpecialist(referral.DoctorSpecialist)
+		if err != nil {
+			return errors.New(err.Error())
+		}
+		// insert to sendbird
+		database.Datasource.DB().Create(&model.Sendbird{
+			Msisdn:   referral.DoctorSpecialist.Phone,
+			Action:   actionCreateUser,
+			Response: createUser,
 		})
 	}
 
