@@ -588,6 +588,23 @@ var officers = []model.Officer{
 	},
 }
 
+var drivers = []model.Driver{
+	{
+		HealthcenterID: 1,
+		Name:           "Alex",
+		Photo:          "driver.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+	{
+		HealthcenterID: 1,
+		Name:           "Doni",
+		Photo:          "driver.png",
+		Phone:          "081299708787",
+		IsActive:       true,
+	},
+}
+
 var apothecaries = []model.Courier{
 	{
 		HealthcenterID: 1,

@@ -13,7 +13,7 @@ type Specialist struct {
 	GraduatedFrom        string    `gorm:"size:150" json:"graduated_from"`
 	ConsultationSchedule string    `gorm:"size:250" json:"consultation_schedule"`
 	PlacePractice        string    `gorm:"size:250" json:"place_practice"`
-	Phone                string    `gorm:"size:15" json:"phone"`
+	Phone                string    `gorm:"size:15;unique" json:"phone"`
 	Start                time.Time `gorm:"type:time" json:"start"`
 	End                  time.Time `gorm:"type:time" json:"end"`
 	IsActive             bool      `gorm:"type:bool" json:"is_active"`

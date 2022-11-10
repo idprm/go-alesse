@@ -79,6 +79,7 @@ func Connect() {
 		&model.Officer{},
 		&model.Apothecary{},
 		&model.Courier{},
+		&model.Driver{},
 		&model.Chat{},
 		&model.MedicalResume{},
 		&model.Referral{},
@@ -102,6 +103,7 @@ func Connect() {
 	var doctor []model.Doctor
 	var specialist []model.Specialist
 	var officer []model.Officer
+	var driver []model.Driver
 	var apothecary []model.Apothecary
 	var courier []model.Courier
 
@@ -112,6 +114,7 @@ func Connect() {
 	resultDoctor := db.Find(&doctor)
 	resultSpecialist := db.Find(&specialist)
 	resultOfficer := db.Find(&officer)
+	resultDriver := db.Find(&driver)
 	resultApothecary := db.Find(&apothecary)
 	resultCourier := db.Find(&courier)
 
@@ -154,6 +157,12 @@ func Connect() {
 	if resultOfficer.RowsAffected == 0 {
 		for i, _ := range officers {
 			db.Model(&model.Officer{}).Create(&officers[i])
+		}
+	}
+
+	if resultDriver.RowsAffected == 0 {
+		for i, _ := range drivers {
+			db.Model(&model.Driver{}).Create(&drivers[i])
 		}
 	}
 

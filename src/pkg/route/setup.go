@@ -41,6 +41,14 @@ func Setup(app *fiber.App) {
 	officers.Get("/", controller.GetAllOfficer)
 	officers.Get("/:phone", controller.GetOfficer)
 
+	drivers := v1.Group("drivers")
+	drivers.Get("/", controller.GetAllDriver)
+	drivers.Get("/:phone", controller.GetDriver)
+
+	apothecaries := v1.Group("apothecaries")
+	apothecaries.Get("/", controller.GetAllApothecary)
+	apothecaries.Get("/:phone", controller.GetApothecary)
+
 	chat := v1.Group("chat")
 	chat.Post("/doctor", controller.ChatDoctor)
 	chat.Delete("/leave", controller.ChatLeave)
@@ -65,7 +73,7 @@ func Setup(app *fiber.App) {
 	homecares.Post("/", controller.SaveHomecare)
 	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
 	homecares.Post("/photos", controller.UploadPhoto)
-	homecares.Post("/officer", controller.SaveHomecareOfficer)
+	homecares.Post("/final", controller.SaveHomecareFinal)
 
 	pharmacies := v1.Group("pharmacies")
 	pharmacies.Get("/", controller.GetAllPharmacy)

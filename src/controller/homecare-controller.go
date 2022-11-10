@@ -14,16 +14,13 @@ import (
 )
 
 type HomecareRequest struct {
-	ChatID             uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
-	EarlyDiagnosis     string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
-	Reason             string                    `query:"reason" validate:"required" json:"reason"`
-	VisitAt            string                    `query:"visit_at" validate:"required" json:"visit_at"`
-	Slug               string                    `query:"slug" json:"slug"`
-	Data               []HomecareMedicineRequest `query:"data" json:"data"`
-	IsSubmited         bool                      `query:"is_submited" json:"is_submited"`
-	Treatment          string                    `query:"treatment" json:"treatment"`
-	FinalDiagnosis     string                    `query:"final_diagnosis" json:"final_diagnosis"`
-	DrugAdministration string                    `query:"drug_administration" json:"drug_administration"`
+	ChatID         uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
+	EarlyDiagnosis string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
+	Reason         string                    `query:"reason" validate:"required" json:"reason"`
+	VisitAt        string                    `query:"visit_at" validate:"required" json:"visit_at"`
+	Slug           string                    `query:"slug" json:"slug"`
+	Data           []HomecareMedicineRequest `query:"data" json:"data"`
+	IsSubmited     bool                      `query:"is_submited" json:"is_submited"`
 }
 
 type HomecareMedicineRequest struct {
@@ -36,11 +33,37 @@ type HomecareMedicineRequest struct {
 	Description string `query:"description" json:"description"`
 }
 
+type HomecareFinalRequest struct {
+	ChatID             uint64 `query:"chat_id" validate:"required" json:"chat_id"`
+	Treatment          string `query:"treatment" json:"treatment"`
+	FinalDiagnosis     string `query:"final_diagnosis" json:"final_diagnosis"`
+	DrugAdministration string `query:"drug_administration" json:"drug_administration"`
+	DoctorID           uint   `query:"doctor_id" json:"doctor_id"`
+	OfficerID          uint   `query:"officer_id" json:"officer_id"`
+	DriverID           uint   `query:"driver_id" json:"driver_id"`
+	IsFinish           bool   `query:"is_finish" json:"is_finish"`
+}
+
 const (
 	valDoctorToHomecare = "NOTIF_DOCTOR_TO_HOMECARE"
 )
 
 func ValidateHomecare(req HomecareRequest) []*ErrorResponse {
+	var errors []*ErrorResponse
+	err := validate.Struct(req)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ErrorResponse
+			element.Field = err.Field()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
+		}
+	}
+	return errors
+}
+
+func ValidateHomecareFinish(req HomecareFinalRequest) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := validate.Struct(req)
 	if err != nil {
@@ -132,15 +155,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 	if isExist.RowsAffected == 0 {
 		homecare := model.Homecare{
-			ChatID:             req.ChatID,
-			EarlyDiagnosis:     req.EarlyDiagnosis,
-			Reason:             req.Reason,
-			VisitAt:            visitAt,
-			Slug:               req.Slug,
-			IsSubmited:         req.IsSubmited,
-			Treatment:          req.Treatment,
-			FinalDiagnosis:     req.FinalDiagnosis,
-			DrugAdministration: req.DrugAdministration,
+			ChatID:         req.ChatID,
+			EarlyDiagnosis: req.EarlyDiagnosis,
+			Reason:         req.Reason,
+			VisitAt:        visitAt,
+			Slug:           req.Slug,
+			SubmitedAt:     time.Now(),
+			IsSubmited:     req.IsSubmited,
 		}
 		database.Datasource.DB().Create(&homecare)
 
@@ -163,9 +184,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 		homecare.Reason = req.Reason
 		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
-		homecare.Treatment = req.Treatment
-		homecare.FinalDiagnosis = req.FinalDiagnosis
-		homecare.DrugAdministration = req.DrugAdministration
+		homecare.SubmitedAt = time.Now()
 		database.Datasource.DB().Save(&homecare)
 
 		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
@@ -190,8 +209,31 @@ func SaveHomecare(c *fiber.Ctx) error {
 	})
 }
 
-func SaveHomecareOfficer(c *fiber.Ctx) error {
+func SaveHomecareFinal(c *fiber.Ctx) error {
 	c.Accepts("application/json")
+
+	req := new(HomecareFinalRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	var homecare model.Homecare
+	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&homecare)
+	if isExist.RowsAffected == 1 {
+		homecare.Treatment = req.Treatment
+		homecare.FinalDiagnosis = req.FinalDiagnosis
+		homecare.DrugAdministration = req.DrugAdministration
+		homecare.OfficerID = req.OfficerID
+		homecare.DoctorID = req.DoctorID
+		homecare.DriverID = req.DriverID
+		homecare.FinishedAt = time.Now()
+		homecare.IsFinished = true
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,
@@ -243,7 +285,6 @@ func UploadPhoto(c *fiber.Ctx) error {
 	)
 
 	// err := database.NewRedisClient().RPush().Err();
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,
 		"message": "Image uploaded successfully",
