@@ -11,6 +11,7 @@ import (
 
 type Secret struct {
 	DB  DBCredential  `yaml:"db"`
+	RD  RDCredential  `yaml:"redis"`
 	SB  SBCredential  `yaml:"sendbird"`
 	ZV  ZVCredential  `yaml:"zenziva"`
 	JWT JWTCredential `yaml:"jwt"`
@@ -22,6 +23,12 @@ type DBCredential struct {
 	UserName string `yaml:"username"`
 	Password string `yaml:"password"`
 	DBName   string `yaml:"dbname"`
+}
+
+type RDCredential struct {
+	Host     string `yaml:"host"`
+	UserName string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 type SBCredential struct {

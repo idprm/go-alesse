@@ -33,6 +33,10 @@ func Setup(app *fiber.App) {
 	doctors.Get("/", controller.GetAllDoctor)
 	doctors.Get("/detail/:username", controller.GetDoctor)
 
+	specialists := v1.Group("specialists")
+	specialists.Get("/", controller.GetAllSpecialist)
+	specialists.Get("/detail/:username", controller.GetSpecialist)
+
 	officers := v1.Group("officers")
 	officers.Get("/type/:type", controller.GetAllOfficer)
 	officers.Get("/phone/:phone", controller.GetOfficer)
@@ -61,6 +65,7 @@ func Setup(app *fiber.App) {
 	homecares.Post("/", controller.SaveHomecare)
 	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
 	homecares.Post("/photos", controller.UploadPhoto)
+	homecares.Post("/officer", controller.SaveHomecareOfficer)
 
 	/**
 	 * AUTHENTICATED ROUTES

@@ -153,7 +153,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Name:        v.Name,
 				Quantity:    v.Qty,
 				Rule:        v.Rule,
-				Time:        v.Time,
+				Dose:        v.Time,
 				Description: v.Description,
 			})
 		}
@@ -177,7 +177,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Name:        v.Name,
 				Quantity:    v.Qty,
 				Rule:        v.Rule,
-				Time:        v.Time,
+				Dose:        v.Time,
 				Description: v.Description,
 			})
 		}
@@ -187,6 +187,16 @@ func SaveHomecare(c *fiber.Ctx) error {
 		"error":   false,
 		"message": "Submited",
 		"data":    homecare,
+	})
+}
+
+func SaveHomecareOfficer(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Submited",
+		"data":    "",
 	})
 }
 
@@ -231,6 +241,8 @@ func UploadPhoto(c *fiber.Ctx) error {
 			FileName:   image,
 		},
 	)
+
+	// err := database.NewRedisClient().RPush().Err();
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,

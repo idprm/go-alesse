@@ -409,7 +409,7 @@ func SendbirdAutoMessageDoctor(channel string, doctor model.Doctor, user model.U
 /**
  * Referral
  */
-func SendbirdCreateSpecialist(specialist model.Doctor) (string, error) {
+func SendbirdCreateSpecialist(specialist model.Specialist) (string, error) {
 	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users"
 
 	userId := specialist.Phone
@@ -456,7 +456,7 @@ func SendbirdCreateSpecialist(specialist model.Doctor) (string, error) {
 	return string([]byte(body)), nil
 }
 
-func SendbirdGetSpecialist(specialist model.Doctor) (string, bool, error) {
+func SendbirdGetSpecialist(specialist model.Specialist) (string, bool, error) {
 	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/users/" + specialist.Phone
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -496,10 +496,10 @@ func SendbirdGetSpecialist(specialist model.Doctor) (string, bool, error) {
 	return string([]byte(body)), errorResponse.Error, nil
 }
 
-func SendbirdReferralCreateGroupChannel(specialist model.Doctor, doctor model.Doctor) (string, string, string, error) {
+func SendbirdReferralCreateGroupChannel(specialist model.Specialist, doctor model.Doctor) (string, string, string, error) {
 	url := "https://api-" + config.ViperEnv("SB_APP_ID") + ".sendbird.com/v3/group_channels"
 
-	users := []string{doctor.Username, specialist.Phone}
+	users := []string{doctor.Username, specialist.Username}
 	operators := []string{"alesse"}
 
 	now := time.Now()
@@ -507,7 +507,7 @@ func SendbirdReferralCreateGroupChannel(specialist model.Doctor, doctor model.Do
 
 	group := Group{
 		Name:        specialist.Name + " - " + doctor.Name,
-		ChannelUrl:  specialist.Phone + "_" + date,
+		ChannelUrl:  specialist.Username + "_" + date,
 		ChannelType: "group_messaging",
 		CustomType:  "chat_with_specialist",
 		UserIds:     users,

@@ -8,6 +8,6 @@ type HomecareMedicine struct {
 	Name        string `gorm:"size:55" json:"name"`
 	Quantity    uint   `gorm:"size:8" json:"quantity"`
 	Rule        string `gorm:"size:55" json:"rule"`
-	Time        string `gorm:"size:15" json:"time"`
+	Dose        string `gorm:"size:15" json:"dose"`
 	Description string `gorm:"type:text" json:"description"`
 }

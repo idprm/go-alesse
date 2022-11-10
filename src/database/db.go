@@ -75,6 +75,7 @@ func Connect() {
 		&model.User{},
 		&model.Verify{},
 		&model.Doctor{},
+		&model.Specialist{},
 		&model.Officer{},
 		&model.Apothecary{},
 		&model.Courier{},
@@ -99,6 +100,7 @@ func Connect() {
 	var disease []model.Disease
 	var medicine []model.Medicine
 	var doctor []model.Doctor
+	var specialist []model.Specialist
 	var officer []model.Officer
 	var apothecary []model.Apothecary
 	var courier []model.Courier
@@ -108,6 +110,7 @@ func Connect() {
 	resultDisease := db.Find(&disease)
 	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
+	resultSpecialist := db.Find(&specialist)
 	resultOfficer := db.Find(&officer)
 	resultApothecary := db.Find(&apothecary)
 	resultCourier := db.Find(&courier)
@@ -139,6 +142,12 @@ func Connect() {
 	if resultDoctor.RowsAffected == 0 {
 		for i, _ := range doctors {
 			db.Model(&model.Doctor{}).Create(&doctors[i])
+		}
+	}
+
+	if resultSpecialist.RowsAffected == 0 {
+		for i, _ := range specialists {
+			db.Model(&model.Specialist{}).Create(&specialists[i])
 		}
 	}
 

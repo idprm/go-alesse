@@ -8,6 +8,6 @@ type PrescriptionMedicine struct {
 	Name           string `gorm:"size:55" json:"name"`
 	Quantity       uint   `gorm:"size:8" json:"quantity"`
 	Dose           string `gorm:"size:15" json:"dose"`
-	Rules          string `gorm:"size:55" json:"rules"`
+	Rule           string `gorm:"size:55" json:"rule"`
 	Description    string `gorm:"type:text" json:"description"`
 }

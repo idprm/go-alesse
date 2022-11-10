@@ -502,7 +502,6 @@ var doctors = []model.Doctor{
 		Phone:                "6281776736076",
 		Start:                time.Now(),
 		End:                  time.Now(),
-		IsSpecialist:         false,
 		IsActive:             true,
 	},
 	{
@@ -519,7 +518,6 @@ var doctors = []model.Doctor{
 		Phone:                "6281212480644",
 		Start:                time.Now(),
 		End:                  time.Now(),
-		IsSpecialist:         false,
 		IsActive:             true,
 	},
 	{
@@ -536,16 +534,17 @@ var doctors = []model.Doctor{
 		Phone:                "6281776736076",
 		Start:                time.Now(),
 		End:                  time.Now(),
-		IsSpecialist:         false,
 		IsActive:             true,
 	},
+}
+
+var specialists = []model.Specialist{
 	{
-		HealthcenterID:       1,
-		Username:             "dr-siera",
-		Name:                 "dr. Siera",
-		Photo:                "dr-siera.png",
-		Type:                 "Dokter Spesialis Penyakit Dalam",
-		Number:               "STR 6111100120221435",
+		Username:             "dr-men",
+		Name:                 "dr. Indra Sandinirwan, Sp.A",
+		Photo:                "dr-men.png",
+		Type:                 "Spesialis Anak",
+		Number:               "STR 61111233456677",
 		Experience:           3,
 		GraduatedFrom:        "Universitas Tanjungpura, 2019",
 		ConsultationSchedule: "06.00 - 23.00 WIB",
@@ -553,7 +552,21 @@ var doctors = []model.Doctor{
 		Phone:                "6281299708787",
 		Start:                time.Now(),
 		End:                  time.Now(),
-		IsSpecialist:         true,
+		IsActive:             true,
+	},
+	{
+		Username:             "dr-hari",
+		Name:                 "dr. Hari Prasetyo Rahardjo, Sp.OG",
+		Photo:                "dr-men.png",
+		Type:                 "Spesialis Ortopedi",
+		Number:               "STR 61111233456677",
+		Experience:           3,
+		GraduatedFrom:        "Universitas Tanjungpura, 2019",
+		ConsultationSchedule: "06.00 - 23.00 WIB",
+		PlacePractice:        "Ngabang, Kalimantan Timur",
+		Phone:                "6281299708787",
+		Start:                time.Now(),
+		End:                  time.Now(),
 		IsActive:             true,
 	},
 }

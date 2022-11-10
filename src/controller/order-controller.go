@@ -139,8 +139,8 @@ func ReferralChat(c *fiber.Ctx) error {
 		 * INSERT TO Referral
 		 */
 		database.Datasource.DB().Create(&model.Referral{
-			DoctorSpecialistID: specialist.ID,
-			DoctorID:           doctor.ID,
+			SpecialistID: specialist.ID,
+			DoctorID:     doctor.ID,
 		})
 
 		/**
@@ -314,13 +314,13 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 		Where("doctor_id", doctorId).
 		Where("DATE(created_at) = DATE(?)", time.Now()).
 		Preload("Doctor").
-		Preload("DoctorSpecialist").
+		Preload("Specialist").
 		First(&referral)
 
 		/**
 		 * Check User Sendbird
 		 */
-	getSpecialist, isSpecialist, err := handler.SendbirdGetSpecialist(referral.DoctorSpecialist)
+	getSpecialist, isSpecialist, err := handler.SendbirdGetSpecialist(referral.Specialist)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -329,7 +329,7 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 	 * Add User Sendbird
 	 */
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   referral.DoctorSpecialist.Phone,
+		Msisdn:   referral.Specialist.Phone,
 		Action:   actionCheckUser,
 		Response: getSpecialist,
 	})
@@ -337,13 +337,13 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 	if isSpecialist == true {
 
 		// create user sendbird
-		createUser, err := handler.SendbirdCreateSpecialist(referral.DoctorSpecialist)
+		createUser, err := handler.SendbirdCreateSpecialist(referral.Specialist)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 		// insert to sendbird
 		database.Datasource.DB().Create(&model.Sendbird{
-			Msisdn:   referral.DoctorSpecialist.Phone,
+			Msisdn:   referral.Specialist.Phone,
 			Action:   actionCreateUser,
 			Response: createUser,
 		})

@@ -20,6 +20,5 @@ type Doctor struct {
 	Phone                string       `gorm:"size:15" json:"phone"`
 	Start                time.Time    `gorm:"type:time" json:"start"`
 	End                  time.Time    `gorm:"type:time" json:"end"`
-	IsSpecialist         bool         `gorm:"type:bool" json:"is_specialist"`
 	IsActive             bool         `gorm:"type:bool" json:"is_active"`
 }
