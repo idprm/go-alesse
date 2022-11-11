@@ -549,7 +549,7 @@ var specialists = []model.Specialist{
 		GraduatedFrom:        "Universitas Tanjungpura, 2019",
 		ConsultationSchedule: "06.00 - 23.00 WIB",
 		PlacePractice:        "Ngabang, Kalimantan Timur",
-		Phone:                "6281299708787",
+		Phone:                "6281299708788",
 		Start:                time.Now(),
 		End:                  time.Now(),
 		IsActive:             true,
@@ -576,14 +576,14 @@ var officers = []model.Officer{
 		HealthcenterID: 1,
 		Name:           "Andi",
 		Photo:          "officer.png",
-		Phone:          "081299708787",
+		Phone:          "081299708781",
 		IsActive:       true,
 	},
 	{
 		HealthcenterID: 1,
 		Name:           "Juli",
 		Photo:          "officer.png",
-		Phone:          "081299708787",
+		Phone:          "081299708782",
 		IsActive:       true,
 	},
 }
@@ -593,7 +593,7 @@ var drivers = []model.Driver{
 		HealthcenterID: 1,
 		Name:           "Alex",
 		Photo:          "driver.png",
-		Phone:          "081299708787",
+		Phone:          "081299708788",
 		IsActive:       true,
 	},
 	{
@@ -610,7 +610,7 @@ var apothecaries = []model.Courier{
 		HealthcenterID: 1,
 		Name:           "Dian",
 		Photo:          "pharmacy.png",
-		Phone:          "081299708787",
+		Phone:          "081299708788",
 		IsActive:       true,
 	},
 	{
@@ -627,7 +627,7 @@ var couriers = []model.Courier{
 		HealthcenterID: 1,
 		Name:           "Dian",
 		Photo:          "courier.png",
-		Phone:          "081299708787",
+		Phone:          "081299708788",
 		IsActive:       true,
 	},
 	{

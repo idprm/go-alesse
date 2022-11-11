@@ -8,7 +8,7 @@ import (
 
 func GetAllDoctor(c *fiber.Ctx) error {
 	var doctors []model.Doctor
-	database.Datasource.DB().Where("is_active", true).Order("end desc").Find(&doctors)
+	database.Datasource.DB().Where("is_active", true).Preload("Healthcenter").Order("end desc").Find(&doctors)
 	return c.Status(fiber.StatusOK).JSON(doctors)
 }
 

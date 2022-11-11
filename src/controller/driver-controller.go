@@ -8,7 +8,7 @@ import (
 
 func GetAllDriver(c *fiber.Ctx) error {
 	var drivers []model.Driver
-	database.Datasource.DB().Order("name asc").Find(&drivers)
+	database.Datasource.DB().Order("name asc").Preload("Healthcenter").Find(&drivers)
 	return c.Status(fiber.StatusOK).JSON(&drivers)
 }
 

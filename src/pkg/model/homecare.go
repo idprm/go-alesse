@@ -18,11 +18,11 @@ type Homecare struct {
 	Treatment          string    `gorm:"type:text" json:"treatment"`
 	FinalDiagnosis     string    `gorm:"type:text" json:"final_diagnosis"`
 	DrugAdministration string    `gorm:"type:text" json:"drug_administration"`
-	DoctorID           uint      `json:"doctor_id"`
+	DoctorID           uint      `gorm:"default:null" json:"doctor_id"`
 	Doctor             Doctor
-	OfficerID          uint `json:"officer_id"`
+	OfficerID          uint `gorm:"default:null" json:"officer_id"`
 	Officer            Officer
-	DriverID           uint `json:"driver_id"`
+	DriverID           uint `gorm:"default:null" json:"driver_id"`
 	Driver             Driver
 	SubmitedAt         time.Time `gorm:"default:null" json:"submited_at"`
 	VisitedAt          time.Time `gorm:"default:null" json:"visited_at"`

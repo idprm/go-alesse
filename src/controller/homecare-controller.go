@@ -185,6 +185,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
+		homecare.IsSubmited = req.IsSubmited
 		database.Datasource.DB().Save(&homecare)
 
 		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})

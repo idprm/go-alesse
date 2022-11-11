@@ -113,12 +113,12 @@ func LoginHandler(c *fiber.Ctx) error {
 	}
 
 	var user model.User
-	isExist := database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
+	isExist := database.Datasource.DB().Where("msisdn", req.Msisdn).Find(&user)
 
 	if isExist.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error":   true,
-			"message": "User not found",
+			"message": "Silakan daftar/registrasi",
 		})
 	}
 
