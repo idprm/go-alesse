@@ -87,6 +87,7 @@ func Connect() {
 		&model.PrescriptionMedicine{},
 		&model.Homecare{},
 		&model.HomecareMedicine{},
+		&model.HomecareOfficer{},
 		&model.Pharmacy{},
 		&model.Treatment{},
 		&model.Shipment{},

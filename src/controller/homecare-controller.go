@@ -15,12 +15,12 @@ import (
 
 type HomecareRequest struct {
 	ChatID         uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
+	PainComplaints string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
 	EarlyDiagnosis string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
 	Reason         string                    `query:"reason" validate:"required" json:"reason"`
 	VisitAt        string                    `query:"visit_at" validate:"required" json:"visit_at"`
 	Slug           string                    `query:"slug" json:"slug"`
 	Data           []HomecareMedicineRequest `query:"data" json:"data"`
-	IsSubmited     bool                      `query:"is_submited" json:"is_submited"`
 }
 
 type HomecareMedicineRequest struct {
@@ -33,8 +33,9 @@ type HomecareMedicineRequest struct {
 	Description string `query:"description" json:"description"`
 }
 
-type HomecareFinalRequest struct {
-	ChatID             uint64 `query:"chat_id" validate:"required" json:"chat_id"`
+type HomecareOfficerRequest struct {
+	HomecareID         uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
+	Slug               string `query:"slug" json:"slug"`
 	Treatment          string `query:"treatment" json:"treatment"`
 	FinalDiagnosis     string `query:"final_diagnosis" json:"final_diagnosis"`
 	DrugAdministration string `query:"drug_administration" json:"drug_administration"`
@@ -63,7 +64,7 @@ func ValidateHomecare(req HomecareRequest) []*ErrorResponse {
 	return errors
 }
 
-func ValidateHomecareFinish(req HomecareFinalRequest) []*ErrorResponse {
+func ValidateHomecareOfficer(req HomecareOfficerRequest) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := validate.Struct(req)
 	if err != nil {
@@ -103,6 +104,12 @@ func GetHomecareAllPhoto(c *fiber.Ctx) error {
 	var photos []model.Photo
 	database.Datasource.DB().Where("homecare_id", c.Query("id")).Find(&photos)
 	return c.Status(fiber.StatusOK).JSON(photos)
+}
+
+func GetAllHomecareByMedicines(c *fiber.Ctx) error {
+	var medicines []model.HomecareMedicine
+	database.Datasource.DB().Joins("Homecare", database.Datasource.DB().Where(&model.Homecare{Slug: c.Params("slug")})).Preload("Medicine").Find(&medicines)
+	return c.Status(fiber.StatusOK).JSON(medicines)
 }
 
 func SaveHomecare(c *fiber.Ctx) error {
@@ -156,12 +163,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 	if isExist.RowsAffected == 0 {
 		homecare := model.Homecare{
 			ChatID:         req.ChatID,
+			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
 			Reason:         req.Reason,
 			VisitAt:        visitAt,
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
-			IsSubmited:     req.IsSubmited,
+			IsSubmited:     true,
 		}
 		database.Datasource.DB().Create(&homecare)
 
@@ -180,12 +188,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 		}
 
 	} else {
+		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
 		homecare.Reason = req.Reason
 		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
-		homecare.IsSubmited = req.IsSubmited
+		homecare.IsSubmited = true
 		database.Datasource.DB().Save(&homecare)
 
 		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
@@ -210,10 +219,10 @@ func SaveHomecare(c *fiber.Ctx) error {
 	})
 }
 
-func SaveHomecareFinal(c *fiber.Ctx) error {
+func SaveHomecareOfficer(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 
-	req := new(HomecareFinalRequest)
+	req := new(HomecareOfficerRequest)
 
 	err := c.BodyParser(req)
 	if err != nil {
@@ -223,27 +232,53 @@ func SaveHomecareFinal(c *fiber.Ctx) error {
 		})
 	}
 
-	var homecare model.Homecare
-	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&homecare)
-	if isExist.RowsAffected == 1 {
+	errors := ValidateHomecareOfficer(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var homecare model.HomecareOfficer
+	isExist := database.Datasource.DB().Where("homecare_id", req.HomecareID).First(&homecare)
+
+	if isExist.RowsAffected == 0 {
+		homecare := model.HomecareOfficer{
+			HomecareID:         req.HomecareID,
+			Slug:               req.Slug,
+			Treatment:          req.Treatment,
+			FinalDiagnosis:     req.FinalDiagnosis,
+			DrugAdministration: req.DrugAdministration,
+			OfficerID:          req.OfficerID,
+			DoctorID:           req.DoctorID,
+			DriverID:           req.DriverID,
+			VisitedAt:          time.Now(),
+			IsVisited:          true,
+		}
+		database.Datasource.DB().Create(&homecare)
+	} else {
+
 		homecare.Treatment = req.Treatment
 		homecare.FinalDiagnosis = req.FinalDiagnosis
 		homecare.DrugAdministration = req.DrugAdministration
 		homecare.OfficerID = req.OfficerID
 		homecare.DoctorID = req.DoctorID
 		homecare.DriverID = req.DriverID
-		homecare.FinishedAt = time.Now()
-		homecare.IsFinished = true
+		homecare.VisitedAt = time.Now()
+		homecare.IsVisited = true
+
+		database.Datasource.DB().Save(&homecare)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
-		"message": "Submited",
-		"data":    "",
+		"message": "Visited",
+		"data":    homecare,
 	})
 }
 
-func UploadPhoto(c *fiber.Ctx) error {
+func HomecarePhoto(c *fiber.Ctx) error {
 	// homecareId = c.FormValue("homecare_id")
 	file, err := c.FormFile("photo")
 
