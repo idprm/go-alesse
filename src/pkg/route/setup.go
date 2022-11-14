@@ -75,6 +75,7 @@ func Setup(app *fiber.App) {
 	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
 	homecares.Post("/photos", controller.HomecarePhoto)
 	homecares.Post("/officer", controller.SaveHomecareOfficer)
+	homecares.Post("/resume", controller.SaveHomecareResume)
 
 	pharmacies := v1.Group("pharmacies")
 	pharmacies.Get("/", controller.GetAllPharmacy)

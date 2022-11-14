@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,23 +27,27 @@ type HomecareRequest struct {
 type HomecareMedicineRequest struct {
 	HomecareID  uint64 `query:"homecare_id" json:"homecare_id"`
 	MedicineID  uint64 `query:"medicine_id" json:"medicine_id"`
-	Name        string `query:"medicine_name" json:"medicine_name"`
-	Qty         uint   `query:"qty" json:"qty"`
+	Name        string `query:"name" json:"name"`
+	Qty         uint   `query:"quantity" json:"quantity"`
 	Rule        string `query:"rule" json:"rule"`
-	Time        string `query:"time" json:"time"`
+	Dose        string `query:"dose" json:"dose"`
 	Description string `query:"description" json:"description"`
 }
 
 type HomecareOfficerRequest struct {
-	HomecareID         uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
-	Slug               string `query:"slug" json:"slug"`
-	Treatment          string `query:"treatment" json:"treatment"`
-	FinalDiagnosis     string `query:"final_diagnosis" json:"final_diagnosis"`
-	DrugAdministration string `query:"drug_administration" json:"drug_administration"`
-	DoctorID           uint   `query:"doctor_id" json:"doctor_id"`
-	OfficerID          uint   `query:"officer_id" json:"officer_id"`
-	DriverID           uint   `query:"driver_id" json:"driver_id"`
-	IsFinish           bool   `query:"is_finish" json:"is_finish"`
+	HomecareID uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
+	Slug       string `query:"slug" json:"slug"`
+	DoctorID   uint   `query:"doctor_id" json:"doctor_id"`
+	OfficerID  uint   `query:"officer_id" json:"officer_id"`
+	DriverID   uint   `query:"driver_id" json:"driver_id"`
+}
+
+type HomecareResumeRequest struct {
+	HomecareID           uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
+	Slug                 string `query:"slug" json:"slug"`
+	PhysicaleExamination string `query:"physicale_examination" json:"physicale_examination"`
+	FinalDiagnosis       string `query:"final_diagnosis" json:"final_diagnosis"`
+	MedicalTreatment     string `query:"medical_treatment" json:"medical_treatment"`
 }
 
 const (
@@ -65,6 +70,21 @@ func ValidateHomecare(req HomecareRequest) []*ErrorResponse {
 }
 
 func ValidateHomecareOfficer(req HomecareOfficerRequest) []*ErrorResponse {
+	var errors []*ErrorResponse
+	err := validate.Struct(req)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ErrorResponse
+			element.Field = err.Field()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
+		}
+	}
+	return errors
+}
+
+func ValidateHomecareResume(req HomecareResumeRequest) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := validate.Struct(req)
 	if err != nil {
@@ -182,7 +202,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Name:        v.Name,
 				Quantity:    v.Qty,
 				Rule:        v.Rule,
-				Dose:        v.Time,
+				Dose:        v.Dose,
 				Description: v.Description,
 			})
 		}
@@ -206,7 +226,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Name:        v.Name,
 				Quantity:    v.Qty,
 				Rule:        v.Rule,
-				Dose:        v.Time,
+				Dose:        v.Dose,
 				Description: v.Description,
 			})
 		}
@@ -245,23 +265,16 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 
 	if isExist.RowsAffected == 0 {
 		homecare := model.HomecareOfficer{
-			HomecareID:         req.HomecareID,
-			Slug:               req.Slug,
-			Treatment:          req.Treatment,
-			FinalDiagnosis:     req.FinalDiagnosis,
-			DrugAdministration: req.DrugAdministration,
-			OfficerID:          req.OfficerID,
-			DoctorID:           req.DoctorID,
-			DriverID:           req.DriverID,
-			VisitedAt:          time.Now(),
-			IsVisited:          true,
+			HomecareID: req.HomecareID,
+			Slug:       req.Slug,
+			OfficerID:  req.OfficerID,
+			DoctorID:   req.DoctorID,
+			DriverID:   req.DriverID,
+			VisitedAt:  time.Now(),
+			IsVisited:  true,
 		}
 		database.Datasource.DB().Create(&homecare)
 	} else {
-
-		homecare.Treatment = req.Treatment
-		homecare.FinalDiagnosis = req.FinalDiagnosis
-		homecare.DrugAdministration = req.DrugAdministration
 		homecare.OfficerID = req.OfficerID
 		homecare.DoctorID = req.DoctorID
 		homecare.DriverID = req.DriverID
@@ -278,8 +291,49 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	})
 }
 
+func SaveHomecareResume(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	req := new(HomecareResumeRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	errors := ValidateHomecareResume(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var homecare model.HomecareOfficer
+	isExist := database.Datasource.DB().Where("homecare_id", req.HomecareID).First(&homecare)
+
+	if isExist.RowsAffected > 0 {
+		homecare.PhysicaleExamination = req.PhysicaleExamination
+		homecare.FinalDiagnosis = req.FinalDiagnosis
+		homecare.MedicalTreatment = req.MedicalTreatment
+		homecare.FinishedAt = time.Now()
+		homecare.IsFinished = true
+		database.Datasource.DB().Save(&homecare)
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"error":   false,
+		"message": "Submited",
+		"data":    homecare,
+	})
+}
+
 func HomecarePhoto(c *fiber.Ctx) error {
-	// homecareId = c.FormValue("homecare_id")
+	healthcenterId, _ := strconv.Atoi(c.FormValue("healthcenter_id"))
+	homecareId, _ := strconv.ParseUint(c.FormValue("homecare_id"), 0, 64)
 	file, err := c.FormFile("photo")
 
 	if err != nil {
@@ -299,10 +353,10 @@ func HomecarePhoto(c *fiber.Ctx) error {
 	fileExt := strings.Split(file.Filename, ".")[1]
 
 	// generate image from filename and extension
-	image := fmt.Sprintf("%s.%s", filename, fileExt)
+	imageFile := fmt.Sprintf("%s.%s", filename, fileExt)
 
 	// save image to ./images dir
-	err = c.SaveFile(file, fmt.Sprintf("./images/%s", image))
+	err = c.SaveFile(file, fmt.Sprintf("./public/uploads/homecare/%s", imageFile))
 
 	if err != nil {
 		log.Println("image save error --> ", err)
@@ -314,9 +368,10 @@ func HomecarePhoto(c *fiber.Ctx) error {
 	}
 
 	database.Datasource.DB().Create(
-		&model.Photo{
-			HomecareID: 1,
-			FileName:   image,
+		&model.HomecareUpload{
+			HealthcenterID: uint(healthcenterId),
+			HomecareID:     homecareId,
+			Filename:       filename + "." + fileExt,
 		},
 	)
 
@@ -324,6 +379,6 @@ func HomecarePhoto(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,
 		"message": "Image uploaded successfully",
-		"data":    image,
+		"data":    imageFile,
 	})
 }

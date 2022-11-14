@@ -70,6 +70,8 @@ func Connect() {
 	db.AutoMigrate(
 		&model.Config{},
 		&model.Healthcenter{},
+		&model.SuperAdmin{},
+		&model.Admin{},
 		&model.Disease{},
 		&model.Medicine{},
 		&model.User{},
@@ -88,6 +90,7 @@ func Connect() {
 		&model.Homecare{},
 		&model.HomecareMedicine{},
 		&model.HomecareOfficer{},
+		&model.HomecareUpload{},
 		&model.Pharmacy{},
 		&model.Treatment{},
 		&model.Shipment{},
