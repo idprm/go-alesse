@@ -4,6 +4,8 @@ import "gorm.io/gorm"
 
 type Referral struct {
 	ID           uint64     `gorm:"primaryKey" json:"id"`
+	ChatID       uint64     `json:"-"`
+	Chat         Chat       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	DoctorID     uint       `json:"-"`
 	Doctor       Doctor     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	SpecialistID uint       `json:"-"`

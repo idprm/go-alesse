@@ -44,19 +44,16 @@ func Referral(c *fiber.Ctx) error {
 	 * Check Referral
 	 */
 	var referral model.Referral
-	resultReferral := database.Datasource.DB().
-		Where("doctor_id", chat.Doctor.ID).
-		Where("specialist_id", specialist.ID).
-		Where("DATE(created_at) = DATE(?)", time.Now()).
-		First(&referral)
+	resultReferral := database.Datasource.DB().Where("chat_id", chat.ID).First(&referral)
 
-	finishUrl := config.ViperEnv("APP_HOST") + "/specialist/chat"
+	finishUrl := config.ViperEnv("APP_HOST") + "/referral/" + referral.ChannelUrl
 
 	if resultReferral.RowsAffected == 0 {
 		/**
 		 * INSERT TO Referral
 		 */
 		database.Datasource.DB().Create(&model.Referral{
+			ChatID:       chat.ID,
 			SpecialistID: specialist.ID,
 			DoctorID:     chat.DoctorID,
 		})
@@ -64,7 +61,7 @@ func Referral(c *fiber.Ctx) error {
 		/**
 		 * SENDBIRD PROCESS
 		 */
-		err := sendbirdProcessReferral(specialist.ID, chat.DoctorID)
+		channelUrl, err := sendbirdProcessReferral(specialist.ID, chat.DoctorID)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -76,7 +73,7 @@ func Referral(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 			"error":        false,
 			"message":      "Created Successfull",
-			"redirect_url": finishUrl,
+			"redirect_url": config.ViperEnv("APP_HOST") + "/referral/" + channelUrl,
 			"status":       fiber.StatusCreated,
 		})
 	} else {
@@ -94,7 +91,7 @@ func ReferralChat(c *fiber.Ctx) error {
 
 	req := new(ReferralChatRequest)
 
-	err := c.BodyParser(req)
+	err := c.QueryParser(req)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   true,
@@ -103,7 +100,7 @@ func ReferralChat(c *fiber.Ctx) error {
 	}
 
 	var referral model.Referral
-	isReferral := database.Datasource.DB().Where("channel_url", referral.ChannelUrl).Preload("Specialist").Preload("Doctor").First(&referral)
+	isReferral := database.Datasource.DB().Where("channel_url", req.ChannelUrl).Preload("Specialist").Preload("Doctor").First(&referral)
 
 	if isReferral.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -112,10 +109,10 @@ func ReferralChat(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(&isReferral)
+	return c.Status(fiber.StatusOK).JSON(referral)
 }
 
-func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
+func sendbirdProcessReferral(specialistId uint, doctorId uint) (string, error) {
 
 	var referral model.Referral
 	database.Datasource.DB().
@@ -131,7 +128,7 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 		 */
 	getSpecialist, _, err := handler.SendbirdGetSpecialist(referral.Specialist)
 	if err != nil {
-		return errors.New(err.Error())
+		return "", errors.New(err.Error())
 	}
 
 	/**
@@ -146,7 +143,7 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 	// create group
 	createGroup, name, url, err := handler.SendbirdReferralCreateGroupChannel(referral.Specialist, referral.Doctor)
 	if err != nil {
-		return errors.New(err.Error())
+		return "", errors.New(err.Error())
 	}
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
@@ -175,7 +172,7 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 		// NOTIF MESSAGE TO DOCTOR
 		zenzifaNotif, err := handler.ZenzivaSendSMS(referral.Specialist.Phone, message)
 		if err != nil {
-			return errors.New(err.Error())
+			return "", errors.New(err.Error())
 		}
 		// insert to zenziva
 		database.Datasource.DB().Create(&model.Zenziva{
@@ -185,5 +182,5 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) error {
 		})
 	}
 
-	return nil
+	return url, nil
 }

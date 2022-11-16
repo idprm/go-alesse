@@ -110,6 +110,8 @@ func Connect() {
 	var driver []model.Driver
 	var apothecary []model.Apothecary
 	var courier []model.Courier
+	var admin []model.Admin
+	var superadmin []model.SuperAdmin
 
 	resultConfig := db.Find(&config)
 	resultHealthCenter := db.Find(&healthcenter)
@@ -121,6 +123,8 @@ func Connect() {
 	resultDriver := db.Find(&driver)
 	resultApothecary := db.Find(&apothecary)
 	resultCourier := db.Find(&courier)
+	resultAdmin := db.Find(&admin)
+	resultSuperadmin := db.Find(&superadmin)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
@@ -179,6 +183,18 @@ func Connect() {
 	if resultCourier.RowsAffected == 0 {
 		for i, _ := range couriers {
 			db.Model(&model.Courier{}).Create(&couriers[i])
+		}
+	}
+
+	if resultAdmin.RowsAffected == 0 {
+		for i, _ := range admins {
+			db.Model(&model.Admin{}).Create(&admins[i])
+		}
+	}
+
+	if resultSuperadmin.RowsAffected == 0 {
+		for i, _ := range superadmins {
+			db.Model(&model.SuperAdmin{}).Create(&superadmins[i])
 		}
 	}
 

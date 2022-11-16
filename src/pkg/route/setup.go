@@ -74,6 +74,7 @@ func Setup(app *fiber.App) {
 	homecares.Post("/", controller.SaveHomecare)
 	homecares.Get("/photos/:id", controller.GetHomecareAllPhoto)
 	homecares.Post("/photos", controller.HomecarePhoto)
+	homecares.Get("/officer/:slug", controller.GetHomecareByOfficer)
 	homecares.Post("/officer", controller.SaveHomecareOfficer)
 	homecares.Post("/resume", controller.SaveHomecareResume)
 
@@ -84,7 +85,7 @@ func Setup(app *fiber.App) {
 
 	referrals := v1.Group("referrals")
 	referrals.Post("/", controller.Referral)
-	referrals.Post("/chat", controller.ReferralChat)
+	referrals.Get("/chat", controller.ReferralChat)
 
 	/**
 	 * AUTHENTICATED ROUTES

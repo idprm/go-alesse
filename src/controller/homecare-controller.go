@@ -114,6 +114,14 @@ func GetHomecare(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(homecare)
 }
 
+func GetHomecareByOfficer(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	var homecareOfficer model.HomecareOfficer
+	database.Datasource.DB().Joins("Homecare", database.Datasource.DB().Where(&model.Homecare{Slug: c.Params("channel_url")})).Preload("Doctor").Preload("Officer").Preload("Driver").First(&homecareOfficer)
+	return c.Status(fiber.StatusOK).JSON(homecareOfficer)
+}
+
 func GetHomecareByDoctor(c *fiber.Ctx) error {
 	var homecare model.Homecare
 	database.Datasource.DB().Where("slug", c.Params("slug")).Preload("Chat.Doctor").Preload("Chat.User").First(&homecare)

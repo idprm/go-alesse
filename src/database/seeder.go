@@ -596,8 +596,8 @@ var specialists = []model.Specialist{
 		ConsultationSchedule: "06.00 - 23.00 WIB",
 		PlacePractice:        "Ngabang, Kalimantan Timur",
 		Phone:                "6281299708788",
-		Start:                time.Now(),
-		End:                  time.Now(),
+		Start:                time.Date(2020, time.April, 11, 00, 01, 01, 0, time.Local),
+		End:                  time.Date(2020, time.April, 11, 23, 59, 01, 0, time.Local),
 		IsActive:             true,
 	},
 	{
@@ -611,8 +611,8 @@ var specialists = []model.Specialist{
 		ConsultationSchedule: "06.00 - 23.00 WIB",
 		PlacePractice:        "Ngabang, Kalimantan Timur",
 		Phone:                "6281299708787",
-		Start:                time.Now(),
-		End:                  time.Now(),
+		Start:                time.Date(2020, time.April, 11, 00, 01, 01, 0, time.Local),
+		End:                  time.Date(2020, time.April, 11, 23, 59, 01, 0, time.Local),
 		IsActive:             true,
 	},
 }
@@ -682,5 +682,28 @@ var couriers = []model.Courier{
 		Photo:          "courier.png",
 		Phone:          "6281288068122",
 		IsActive:       true,
+	},
+}
+
+var admins = []model.Admin{
+	{
+		HealthcenterID: 1,
+		Phone:          "6281299708787",
+		Password:       "XXXXXX",
+		IsActive:       true,
+	},
+	{
+		HealthcenterID: 2,
+		Phone:          "62812997087812",
+		Password:       "XXXXXX",
+		IsActive:       true,
+	},
+}
+
+var superadmins = []model.SuperAdmin{
+	{
+		Phone:    "6281299708787",
+		Password: "XXXXXX",
+		IsActive: true,
 	},
 }
