@@ -7,7 +7,6 @@ import (
 )
 
 func GetAllDisease(c *fiber.Ctx) error {
-	search := c.Query("search")
 	var diasease []model.Disease
 	database.Datasource.DB().Where("name LIKE ?", "%"+c.Query("search")+"%").Order("name asc").Limit(10).Find(&diasease)
 	return c.Status(fiber.StatusOK).JSON(&diasease)
