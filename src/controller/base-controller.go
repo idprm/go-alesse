@@ -7,14 +7,16 @@ import (
 )
 
 func GetAllDisease(c *fiber.Ctx) error {
+	search := c.Query("search")
 	var diasease []model.Disease
-	database.Datasource.DB().Order("name asc").Find(&diasease)
+	database.Datasource.DB().Where("name LIKE '%?%'", search).Order("name asc").Limit(10).Find(&diasease)
 	return c.Status(fiber.StatusOK).JSON(&diasease)
 }
 
 func GetAllMedicine(c *fiber.Ctx) error {
+	search := c.Query("search")
 	var medicines []model.Medicine
-	database.Datasource.DB().Where("is_active", true).Find(&medicines)
+	database.Datasource.DB().Where("name LIKE '%?%'", search).Where("is_active", true).Limit(10).Find(&medicines)
 	return c.Status(fiber.StatusOK).JSON(&medicines)
 }
 
