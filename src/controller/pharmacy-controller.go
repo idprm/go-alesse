@@ -175,6 +175,29 @@ func SavePharmacy(c *fiber.Ctx) error {
 			})
 		}
 
+		/**
+		 * send notif
+		 */
+
+		// var conf model.Config
+		// database.Datasource.DB().Where("name", "NOTIF_MESSAGE_DOCTOR").First(&conf)
+
+		// urlWeb := config.ViperEnv("APP_HOST") + "/chat/" + url
+		// replaceMessage := strings.NewReplacer("@v1", order.Doctor.Name, "@v2", order.User.Name, "@v3", urlWeb)
+		// message := replaceMessage.Replace(conf.Value)
+
+		// // NOTIF MESSAGE TO DOCTOR
+		// zenzifaNotif, err := handler.ZenzivaSendSMS(order.Doctor.Phone, message)
+		// if err != nil {
+		// 	return errors.New(err.Error())
+		// }
+		// // insert to zenziva
+		// database.Datasource.DB().Create(&model.Zenziva{
+		// 	Msisdn:   order.User.Msisdn,
+		// 	Action:   actionCreateNotif,
+		// 	Response: zenzifaNotif,
+		// })
+
 	} else {
 		pharmacy.Weight = req.Weight
 		pharmacy.PainComplaints = req.PainComplaints
