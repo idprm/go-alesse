@@ -16,6 +16,7 @@ import (
 
 type PharmacyRequest struct {
 	ChatID          uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
+	Weight          uint32                    `query:"weight" validate:"required" json:"weight"`
 	PainComplaints  string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
 	Diagnosis       string                    `query:"diagnosis" validate:"required" json:"diagnosis"`
 	AllergyMedicine string                    `query:"allergy_medicine" validate:"required" json:"allergy_medicine"`
@@ -150,6 +151,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 	if isExist.RowsAffected == 0 {
 		pharmacy := model.Pharmacy{
 			ChatID:          req.ChatID,
+			Weight:          req.Weight,
 			PainComplaints:  req.PainComplaints,
 			Diagnosis:       req.Diagnosis,
 			AllergyMedicine: req.AllergyMedicine,
@@ -174,6 +176,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 		}
 
 	} else {
+		pharmacy.Weight = req.Weight
 		pharmacy.PainComplaints = req.PainComplaints
 		pharmacy.Diagnosis = req.Diagnosis
 		pharmacy.AllergyMedicine = req.AllergyMedicine

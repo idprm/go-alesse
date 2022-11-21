@@ -11,6 +11,7 @@ type Pharmacy struct {
 	ChatID          uint64 `json:"chat_id"`
 	Chat            Chat
 	Number          string    `gorm:"size:25" json:"number"`
+	Weight          uint32    `gorm:"size:5" json:"weight"`
 	PainComplaints  string    `gorm:"type:text" json:"pain_complaints"`
 	Diagnosis       string    `gorm:"type:text" json:"diagnosis"`
 	AllergyMedicine string    `gorm:"type:text" json:"allergy_medicine"`
