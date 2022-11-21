@@ -9,14 +9,13 @@ import (
 func GetAllDisease(c *fiber.Ctx) error {
 	search := c.Query("search")
 	var diasease []model.Disease
-	database.Datasource.DB().Where("name LIKE %?%", search).Order("name asc").Limit(10).Find(&diasease)
+	database.Datasource.DB().Where("name LIKE ?", "%"+c.Query("search")+"%").Order("name asc").Limit(10).Find(&diasease)
 	return c.Status(fiber.StatusOK).JSON(&diasease)
 }
 
 func GetAllMedicine(c *fiber.Ctx) error {
-	search := c.Query("search")
 	var medicines []model.Medicine
-	database.Datasource.DB().Where("name LIKE %?%", search).Where("is_active", true).Limit(10).Find(&medicines)
+	database.Datasource.DB().Where("is_active", true).Where("name LIKE ?", "%"+c.Query("search")+"%").Limit(10).Find(&medicines)
 	return c.Status(fiber.StatusOK).JSON(&medicines)
 }
 
@@ -28,7 +27,7 @@ func GetMedicine(c *fiber.Ctx) error {
 
 func GetAllHealthCenter(c *fiber.Ctx) error {
 	var healthcenters []model.Healthcenter
-	database.Datasource.DB().Where("is_active", true).Order("name asc").Find(&healthcenters)
+	database.Datasource.DB().Where("is_active", true).Where("name LIKE ?", "%"+c.Query("search")+"%").Order("name asc").Limit(10).Find(&healthcenters)
 	return c.Status(fiber.StatusOK).JSON(healthcenters)
 }
 
