@@ -35,23 +35,19 @@ type PharmacyMedicineRequest struct {
 }
 
 type PharmacyProcessRequest struct {
-	PharmacyID   uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
-	ApothecaryID uint   `query:"apothecary_id" validate:"required" json:"apothecary_id"`
+	PharmacyID uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
 }
 
 type PharmacySentRequest struct {
-	PharmacyID   uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
-	ApothecaryID uint   `query:"apothecary_id" validate:"required" json:"apothecary_id"`
+	PharmacyID uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
 }
 
 type PharmacyTakeRequest struct {
 	PharmacyID uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
-	CourierID  uint   `query:"courier_id" validate:"required" json:"courier_id"`
 }
 
 type PharmacyFinishRequest struct {
 	PharmacyID uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
-	CourierID  uint   `query:"courier_id" validate:"required" json:"courier_id"`
 }
 
 func ValidatePharmacyProcess(req PharmacyProcessRequest) []*ErrorResponse {
@@ -124,6 +120,18 @@ func GetPharmacyByDoctor(c *fiber.Ctx) error {
 	var pharmacy model.Pharmacy
 	database.Datasource.DB().Where("slug", c.Params("slug")).Preload("Chat.Doctor").Preload("Chat.User").First(&pharmacy)
 	return c.Status(fiber.StatusOK).JSON(pharmacy)
+}
+
+func GetPharmacyByApothecary(c *fiber.Ctx) error {
+	var pharmacyApothecary model.PharmacyApothecary
+	database.Datasource.DB().Joins("Pharmacy", database.Datasource.DB().Where(&model.Pharmacy{Slug: c.Params("slug")})).First(&pharmacyApothecary)
+	return c.Status(fiber.StatusOK).JSON(pharmacyApothecary)
+}
+
+func GetPharmacyByCourier(c *fiber.Ctx) error {
+	var pharmacyCourier model.PharmacyCourier
+	database.Datasource.DB().Joins("Pharmacy", database.Datasource.DB().Where(&model.Pharmacy{Slug: c.Params("slug")})).First(&pharmacyCourier)
+	return c.Status(fiber.StatusOK).JSON(pharmacyCourier)
 }
 
 func GetPharmacyAllPhoto(c *fiber.Ctx) error {
@@ -256,10 +264,9 @@ func SaveProcessPharmacy(c *fiber.Ctx) error {
 
 	if existPharmacy.RowsAffected == 0 {
 		pharmacy := model.PharmacyApothecary{
-			PharmacyID:   req.PharmacyID,
-			ApothecaryID: req.ApothecaryID,
-			ProcessAt:    time.Now(),
-			IsProcess:    true,
+			PharmacyID: req.PharmacyID,
+			ProcessAt:  time.Now(),
+			IsProcess:  true,
 		}
 		database.Datasource.DB().Create(&pharmacy)
 	} else {
@@ -301,10 +308,9 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 
 	if existPharmacy.RowsAffected == 0 {
 		pharmacy := model.PharmacyApothecary{
-			PharmacyID:   req.PharmacyID,
-			ApothecaryID: req.ApothecaryID,
-			SentAt:       time.Now(),
-			IsSent:       true,
+			PharmacyID: req.PharmacyID,
+			SentAt:     time.Now(),
+			IsSent:     true,
 		}
 		database.Datasource.DB().Create(&pharmacy)
 	} else {
@@ -347,7 +353,6 @@ func SaveTakePharmacy(c *fiber.Ctx) error {
 	if existPharmacy.RowsAffected == 0 {
 		pharmacy := model.PharmacyCourier{
 			PharmacyID: req.PharmacyID,
-			CourierID:  req.CourierID,
 			TakeAt:     time.Now(),
 			IsTake:     true,
 		}
@@ -392,7 +397,6 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 	if existPharmacy.RowsAffected == 0 {
 		pharmacy := model.PharmacyCourier{
 			PharmacyID: req.PharmacyID,
-			CourierID:  req.CourierID,
 			FinishAt:   time.Now(),
 			IsFinish:   true,
 		}

@@ -81,6 +81,8 @@ func Setup(app *fiber.App) {
 	pharmacies := v1.Group("pharmacies")
 	pharmacies.Get("/", controller.GetAllPharmacy)
 	pharmacies.Get("/doctor/:slug", controller.GetPharmacyByDoctor)
+	pharmacies.Get("/apothecary/:slug", controller.GetPharmacyByApothecary)
+	pharmacies.Get("/courier/:slug", controller.GetPharmacyByCourier)
 	pharmacies.Post("/", controller.SavePharmacy)
 	pharmacies.Post("/process", controller.SaveProcessPharmacy)
 	pharmacies.Post("/sent", controller.SaveSentPharmacy)
