@@ -48,6 +48,9 @@ type HomecareResumeRequest struct {
 	PhysicaleExamination string `query:"physicale_examination" json:"physicale_examination"`
 	FinalDiagnosis       string `query:"final_diagnosis" json:"final_diagnosis"`
 	MedicalTreatment     string `query:"medical_treatment" json:"medical_treatment"`
+	BloodPressure        string `query:"blood_pressure" json:"blood_pressure"`
+	Weight               uint32 `query:"weight" json:"weight"`
+	Height               uint32 `query:"height" json:"height"`
 }
 
 const (
@@ -327,6 +330,9 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 		homecare.PhysicaleExamination = req.PhysicaleExamination
 		homecare.FinalDiagnosis = req.FinalDiagnosis
 		homecare.MedicalTreatment = req.MedicalTreatment
+		homecare.BloodPressure = req.BloodPressure
+		homecare.Height = req.Height
+		homecare.Weight = req.Weight
 		homecare.FinishedAt = time.Now()
 		homecare.IsFinished = true
 		database.Datasource.DB().Save(&homecare)

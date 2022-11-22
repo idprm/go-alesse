@@ -20,6 +20,9 @@ type HomecareOfficer struct {
 	Officer              Officer
 	DriverID             uint `gorm:"default:null" json:"driver_id"`
 	Driver               Driver
+	BloodPressure        string    `gorm:"size:15" json:"blood_pressure"`
+	Weight               uint32    `gorm:"size:5" json:"weight"`
+	Height               uint32    `gorm:"size:5" json:"height"`
 	VisitedAt            time.Time `gorm:"default:null" json:"visited_at"`
 	FinishedAt           time.Time `gorm:"default:null" json:"finished_at"`
 	IsVisited            bool      `gorm:"type:bool;default:false" json:"is_visited"`

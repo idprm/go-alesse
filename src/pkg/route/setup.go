@@ -93,6 +93,10 @@ func Setup(app *fiber.App) {
 	referrals.Post("/", controller.Referral)
 	referrals.Get("/chat", controller.ReferralChat)
 
+	feedbacks := v1.Group("feedbacks")
+	feedbacks.Get("/:slug", controller.GetFeedback)
+	feedbacks.Post("/", controller.SaveFeedback)
+
 	/**
 	 * AUTHENTICATED ROUTES
 	 */
