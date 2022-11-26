@@ -101,6 +101,7 @@ func Connect() {
 		&model.Feedback{},
 		&model.Sendbird{},
 		&model.Zenziva{},
+		&model.Notif{},
 	)
 
 	// TODO: Add seeders

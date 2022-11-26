@@ -78,7 +78,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_HEALTHOFFICE",
-		Value: "Hello Admin Dinkes @admin, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient",
+		Value: "Hello Admin Dinkes, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient",
 	},
 }
 

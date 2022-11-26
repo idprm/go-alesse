@@ -11,7 +11,8 @@ import (
 )
 
 type LoginRequest struct {
-	Msisdn string `query:"msisdn" validate:"required" json:"msisdn"`
+	Msisdn    string `query:"msisdn" validate:"required" json:"msisdn"`
+	IpAddress string `query:"ip_address" json:"ip_address"`
 }
 
 type RegisterRequest struct {
@@ -22,6 +23,9 @@ type RegisterRequest struct {
 	Dob          string `query:"dob" validate:"required" json:"dob"`
 	Gender       string `query:"gender" validate:"required" json:"gender"`
 	Address      string `query:"address" validate:"required" json:"address"`
+	Latitude     string `query:"latitude" json:"latitude"`
+	Longitude    string `query:"longitude" json:"longitude"`
+	IpAddress    string `query:"ip_address" json:"ip_address"`
 }
 
 type VerifyRequest struct {
@@ -124,6 +128,7 @@ func LoginHandler(c *fiber.Ctx) error {
 
 	var usr model.User
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&usr)
+	usr.IpAddress = req.IpAddress
 	usr.LoginAt = time.Now()
 	database.Datasource.DB().Save(&usr)
 
@@ -190,13 +195,17 @@ func RegisterHandler(c *fiber.Ctx) error {
 				Dob:            dob,
 				Gender:         req.Gender,
 				Address:        req.Address,
+				Latitude:       req.Latitude,
+				Longitude:      req.Longitude,
+				ActiveAt:       time.Now(),
+				IsActive:       true,
 			},
 		)
 
 		var usr model.User
 		database.Datasource.DB().Where("msisdn", req.Msisdn).First(&usr)
-		usr.IsActive = true
-		usr.ActiveAt = time.Now()
+		usr.IpAddress = req.IpAddress
+		usr.LoginAt = time.Now()
 		database.Datasource.DB().Save(&usr)
 
 		token, exp, err := middleware.GenerateJWTToken(usr)

@@ -11,7 +11,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/idprm/go-alesse/src/database"
+	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/model"
+	"github.com/idprm/go-alesse/src/pkg/util"
 )
 
 type HomecareRequest struct {
@@ -43,14 +45,15 @@ type HomecareOfficerRequest struct {
 }
 
 type HomecareResumeRequest struct {
-	HomecareID           uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
-	Slug                 string `query:"slug" json:"slug"`
-	PhysicaleExamination string `query:"physicale_examination" json:"physicale_examination"`
-	FinalDiagnosis       string `query:"final_diagnosis" json:"final_diagnosis"`
-	MedicalTreatment     string `query:"medical_treatment" json:"medical_treatment"`
-	BloodPressure        string `query:"blood_pressure" json:"blood_pressure"`
-	Weight               uint32 `query:"weight" json:"weight"`
-	Height               uint32 `query:"height" json:"height"`
+	HomecareID           uint64                    `query:"homecare_id" validate:"required" json:"homecare_id"`
+	Slug                 string                    `query:"slug" json:"slug"`
+	PhysicaleExamination string                    `query:"physicale_examination" json:"physicale_examination"`
+	FinalDiagnosis       string                    `query:"final_diagnosis" json:"final_diagnosis"`
+	MedicalTreatment     string                    `query:"medical_treatment" json:"medical_treatment"`
+	BloodPressure        string                    `query:"blood_pressure" json:"blood_pressure"`
+	Weight               uint32                    `query:"weight" json:"weight"`
+	Height               uint32                    `query:"height" json:"height"`
+	Data                 []HomecareMedicineRequest `query:"data" json:"data"`
 }
 
 const (
@@ -165,29 +168,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	}
 
 	var homecare model.Homecare
-	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&homecare)
-
-	// send notif
-	// var notifDoctorToHomecare model.Config
-	// database.Datasource.DB().Where("name", valDoctorToHomecare).First(&notifDoctorToHomecare)
-	// replaceMessage := strings.Replace(notifDoctorToHomecare.Value, "@doctor", "", 1)
-
-	// zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(homecare.Chat.User.Msisdn, replaceMessage)
-	// if err != nil {
-	// 	// util.Log.WithFields(logrus.Fields{"error": err.Error()}).Error(valDoctorToHomecare)
-	// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-	// 		"error":   true,
-	// 		"message": err.Error(),
-	// 	})
-	// }
-	// // insert to zenziva
-	// database.Datasource.DB().Create(
-	// 	&model.Zenziva{
-	// 		Msisdn:   homecare.Chat.User.Msisdn,
-	// 		Action:   valDoctorToHomecare,
-	// 		Response: zenzivaDoctorToHomecare,
-	// 	},
-	// )
+	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").First(&homecare)
 
 	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
 
@@ -242,6 +223,37 @@ func SaveHomecare(c *fiber.Ctx) error {
 			})
 		}
 	}
+
+	// NOTIF_DOCTOR_TO_HOMECARE
+	var notifDoctorToHomecare model.Config
+	database.Datasource.DB().Where("name", valDoctorToHomecare).First(&notifDoctorToHomecare)
+
+	replaceMessage := util.ContentDoctorToHomecare(notifDoctorToHomecare.Value, homecare)
+
+	zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(homecare.Chat.User.Msisdn, replaceMessage)
+	if err != nil {
+		// util.Log.WithFields(logrus.Fields{"error": err.Error()}).Error(valDoctorToHomecare)
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(
+		&model.Zenziva{
+			Msisdn:   homecare.Chat.User.Msisdn,
+			Action:   valDoctorToHomecare,
+			Response: zenzivaDoctorToHomecare,
+		},
+	)
+
+	// insert to notif
+	database.Datasource.DB().Create(
+		&model.Notif{
+			UserID:  homecare.Chat.User.ID,
+			Content: "",
+		},
+	)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
@@ -336,6 +348,20 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 		homecare.FinishedAt = time.Now()
 		homecare.IsFinished = true
 		database.Datasource.DB().Save(&homecare)
+	}
+
+	database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
+
+	for _, v := range req.Data {
+		database.Datasource.DB().Create(&model.HomecareMedicine{
+			HomecareID:  homecare.ID,
+			MedicineID:  v.MedicineID,
+			Name:        v.Name,
+			Quantity:    v.Qty,
+			Rule:        v.Rule,
+			Dose:        v.Dose,
+			Description: v.Description,
+		})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
