@@ -70,7 +70,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_DONE",
-		Value: "Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh.",
+		Value: "Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh. @link",
 	},
 	{
 		Name:  "NOTIF_DOCTOR_TO_HOMECARE",

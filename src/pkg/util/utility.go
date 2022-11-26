@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/idprm/go-alesse/src/pkg/config"
 	"github.com/idprm/go-alesse/src/pkg/model"
 )
 
@@ -19,14 +20,14 @@ func TrimByteToString(b []byte) string {
 
 func ContentDoctorToPharmacy(content string, pharmacy model.Pharmacy) string {
 	// Hello Admin Farmasi @health_center terdapat pengajuan resep obat dari @doctor untuk pasien @patient Cek disini @link
-	urlWeb := pharmacy.Chat.ChannelUrl
+	urlWeb := config.ViperEnv("APP_HOST") + "/process/" + pharmacy.Chat.ChannelUrl
 	replacer := strings.NewReplacer("@health_center", pharmacy.Chat.Doctor.Healthcenter.Name, "@doctor", pharmacy.Chat.Doctor.Name, "@patient", pharmacy.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
 
 func ContentPharmacyToCourier(content string, pharmacy model.Pharmacy) string {
-	urlWeb := "/courier" + pharmacy.Chat.ChannelUrl
+	urlWeb := config.ViperEnv("APP_HOST") + "/courier/" + pharmacy.Chat.ChannelUrl
 	// Hello Kurir @courier, terdapat pemintaan pengantaran obat dari Farmasi @pharmacy untuk pasien @patient. Cek disini @link
 	replacer := strings.NewReplacer("@courier", "", "@pharmacy", pharmacy.Chat.Doctor.Name, "@patient", pharmacy.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
@@ -54,6 +55,14 @@ func ContentCourierToPatient(content string, pharmacy model.Pharmacy) string {
 	return content
 }
 
+func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
+	// Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link
+	urlWeb := config.ViperEnv("APP_HOST") + "/visit/" + homecare.Chat.ChannelUrl
+	replacer := strings.NewReplacer("@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@doctor", homecare.Chat.Doctor.Name, "@patient", homecare.Chat.User.Name, "@link", urlWeb)
+	content = replacer.Replace(content)
+	return content
+}
+
 func ContentHomecareToPatientProgress(content string, homecare model.Homecare) string {
 	// Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.
 	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Healthcenter.Name)
@@ -62,16 +71,9 @@ func ContentHomecareToPatientProgress(content string, homecare model.Homecare) s
 }
 
 func ContentHomecareToPatientDone(content string, homecare model.Homecare) string {
-	// Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh.
-	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Healthcenter.Name)
-	content = replacer.Replace(content)
-	return content
-}
-
-func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
-	// Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link
-	urlWeb := homecare.Chat.ChannelUrl
-	replacer := strings.NewReplacer("@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@doctor", homecare.Chat.Doctor.Name, "@patient", homecare.Chat.User.Name, "@link", urlWeb)
+	// Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh. @link
+	urlWeb := config.ViperEnv("APP_HOST") + "/feedback/" + homecare.Chat.ChannelUrl
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
