@@ -20,6 +20,10 @@ var configs = []model.Config{
 		Value: "Hi *@v1* pembayaran Anda sudah terkonfirmasi. Untuk Chat dengan *@v2* klik disini @v3 (Add to contact agar link bisa diklik)",
 	},
 	{
+		Name:  "NOTIF_MESSAGE_SPECIALIST",
+		Value: "Hi *@v1*, Dokter Umum *@v2* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat @v3",
+	},
+	{
 		Name:  "NOTIF_OTP_USER",
 		Value: "Berikut adalah kode OTP kamu : *@v1* untuk mulai konsultasi dokter di a-lesse.com",
 	},
@@ -46,39 +50,39 @@ var configs = []model.Config{
 	//** SEED DATA NOTIF WA */
 	{
 		Name:  "NOTIF_DOCTOR_TO_PHARMACY",
-		Value: "Hello Admin Farmasi @health_center terdapat pengajuan resep obat dari @doctor untuk pasien @patient Cek disini @link",
+		Value: "Hello Admin Farmasi *@health_center* terdapat pengajuan resep obat dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
 	},
 	{
 		Name:  "NOTIF_PHARMACY_TO_COURIER",
-		Value: "Hello Kurir @courier, terdapat pemintaan pengantaran obat dari Farmasi @pharmacy untuk pasien @patient. Cek disini @link ",
+		Value: "Hello Kurir *@courier*, terdapat pemintaan pengantaran obat dari Farmasi *@pharmacy* untuk pasien *@patient*. Cek disini *@link*",
 	},
 	{
 		Name:  "NOTIF_COURIER_TO_PHARMACY",
-		Value: "Hello Admin Farmasi @health_center, Kurir @courier sudah menyelesaikan pengantaran obat ke pasien @patient",
+		Value: "Hello Admin Farmasi *@health_center*, Kurir *@courier* sudah menyelesaikan pengantaran obat ke pasien *@patient*",
 	},
 	{
 		Name:  "NOTIF_PHARMACY_TO_PATIENT",
-		Value: "Hello pasien @patient obat Anda sedang disiapkan oleh Farmasi @health_center",
+		Value: "Hello pasien *@patient* obat Anda sedang disiapkan oleh Farmasi *@health_center*",
 	},
 	{
 		Name:  "NOTIF_COURIER_TO_PATIENT",
-		Value: "Hello pasien @patient obat Anda sedang diantarkan oleh Kurir @health_center",
+		Value: "Hello pasien *@patient* obat Anda sedang diantarkan oleh Kurir *@health_center*",
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_PROGRESS",
-		Value: "Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.",
+		Value: "Hello pasien *@patient*, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.",
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_DONE",
-		Value: "Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh. @link",
+		Value: "Hello pasien *@patient*, layanan homecare dari tim Homecare *@health_center* sudah selesai dilakukan. Semoga Anda lekas sembuh. *@link*",
 	},
 	{
 		Name:  "NOTIF_DOCTOR_TO_HOMECARE",
-		Value: "Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link",
+		Value: "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_HEALTHOFFICE",
-		Value: "Hello Admin Dinkes, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient",
+		Value: "Hello Admin Dinkes, tim homecare *@health_center* sudah menyelesaikan layanan homecare untuk pasien *@patient*",
 	},
 }
 

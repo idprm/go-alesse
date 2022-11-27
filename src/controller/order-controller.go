@@ -21,6 +21,7 @@ const (
 	actionCreateGroup   = "AUTO CREATE GROUP CHANNEL"
 	actionCreateNotif   = "AUTO CREATE NOTIF TO DOCTOR"
 	actionCreateMessage = "AUTO CREATE MESSAGE DOCTOR"
+	actionCreateNotifSP = "AUTO CREATE NOTIF TO SPECIALIST"
 )
 
 type OrderRequest struct {
@@ -42,16 +43,17 @@ func OrderChat(c *fiber.Ctx) error {
 	}
 
 	var user model.User
-	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
+	database.Datasource.DB().Where("msisdn", req.Msisdn).Preload("Healthcenter").First(&user)
 
 	var doctor model.Doctor
-	database.Datasource.DB().Where("id", req.DoctorID).First(&doctor)
+	database.Datasource.DB().Where("id", req.DoctorID).Preload("Healthcenter").First(&doctor)
 
 	/**
 	 * Check Order
 	 */
 	var order model.Order
 	resultOrder := database.Datasource.DB().
+		Where("healthcenter_id", user.HealthcenterID).
 		Where("user_id", user.ID).
 		Where("doctor_id", doctor.ID).
 		Where("DATE(created_at) = DATE(?)", time.Now()).
@@ -64,16 +66,17 @@ func OrderChat(c *fiber.Ctx) error {
 		 * INSERT TO ORDER
 		 */
 		database.Datasource.DB().Create(&model.Order{
-			UserID:   user.ID,
-			DoctorID: doctor.ID,
-			Number:   "ORD-" + util.TimeStamp(),
-			Total:    0,
+			HealthcenterID: user.Healthcenter.ID,
+			UserID:         user.ID,
+			DoctorID:       doctor.ID,
+			Number:         "ORD-" + util.TimeStamp(),
+			Total:          0,
 		})
 
 		/**
 		 * SENDBIRD PROCESS
 		 */
-		err := sendbirdProcess(user.ID, doctor.ID)
+		err := sendbirdProcess(user.Healthcenter.ID, user.ID, doctor.ID)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -98,14 +101,15 @@ func OrderChat(c *fiber.Ctx) error {
 	}
 }
 
-func sendbirdProcess(userId uint64, doctorId uint) error {
+func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 
 	var order model.Order
 	database.Datasource.DB().
+		Where("healthcenter_id", healthcenterId).
 		Where("user_id", userId).
 		Where("doctor_id", doctorId).
 		Where("DATE(created_at) = DATE(?)", time.Now()).
-		Preload("User").Preload("Doctor").
+		Preload("Healthcenter").Preload("User").Preload("Doctor").
 		First(&order)
 	/**
 	 * Check User Sendbird
@@ -189,11 +193,12 @@ func sendbirdProcess(userId uint64, doctorId uint) error {
 	if name != "" && url != "" {
 		// insert to chat
 		database.Datasource.DB().Create(&model.Chat{
-			OrderID:     order.ID,
-			DoctorID:    order.Doctor.ID,
-			UserID:      order.User.ID,
-			ChannelName: name,
-			ChannelUrl:  url,
+			HealthcenterID: order.HealthcenterID,
+			OrderID:        order.ID,
+			DoctorID:       order.Doctor.ID,
+			UserID:         order.User.ID,
+			ChannelName:    name,
+			ChannelUrl:     url,
 		})
 
 		var conf model.Config

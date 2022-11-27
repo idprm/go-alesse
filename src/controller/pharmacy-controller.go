@@ -126,14 +126,20 @@ func GetPharmacyByDoctor(c *fiber.Ctx) error {
 }
 
 func GetPharmacyByApothecary(c *fiber.Ctx) error {
+	var pharmacy model.Pharmacy
+	database.Datasource.DB().Where("slug", c.Params("slug")).First(&pharmacy)
+
 	var pharmacyApothecary model.PharmacyApothecary
-	database.Datasource.DB().Joins("Pharmacy", database.Datasource.DB().Where(&model.Pharmacy{Slug: c.Params("slug")})).First(&pharmacyApothecary)
+	database.Datasource.DB().Where("pharmacy_id", pharmacy.ID).Preload("Pharmacy.Chat.Doctor").Preload("Pharmacy.Chat.User").First(&pharmacyApothecary)
 	return c.Status(fiber.StatusOK).JSON(pharmacyApothecary)
 }
 
 func GetPharmacyByCourier(c *fiber.Ctx) error {
+	var pharmacy model.Pharmacy
+	database.Datasource.DB().Where("slug", c.Params("slug")).First(&pharmacy)
+
 	var pharmacyCourier model.PharmacyCourier
-	database.Datasource.DB().Joins("Pharmacy", database.Datasource.DB().Where(&model.Pharmacy{Slug: c.Params("slug")})).First(&pharmacyCourier)
+	database.Datasource.DB().Where("pharmacy_id", pharmacy.ID).Preload("Pharmacy.Chat.Doctor").Preload("Pharmacy.Chat.User").First(&pharmacyCourier)
 	return c.Status(fiber.StatusOK).JSON(pharmacyCourier)
 }
 
@@ -202,7 +208,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 
 		var conf model.Config
 		database.Datasource.DB().Where("name", valDoctorToPharmacy).First(&conf)
-		replaceMessage := util.ContentPharmacyToCourier(conf.Value, phar)
+		replaceMessage := util.ContentDoctorToPharmacy(conf.Value, phar)
 
 		zenzifaNotif, err := handler.ZenzivaSendSMS(apothecary.Phone, replaceMessage)
 		if err != nil {
@@ -276,26 +282,25 @@ func SaveProcessPharmacy(c *fiber.Ctx) error {
 		})
 	}
 
-	var pharmacy model.PharmacyApothecary
-	existPharmacy := database.Datasource.DB().Where("pharmacy_id", req.PharmacyID).First(&pharmacy)
+	var pharmacyApothecary model.PharmacyApothecary
+	existPharmacyApothecary := database.Datasource.DB().Where("pharmacy_id", req.PharmacyID).First(&pharmacyApothecary)
 
-	if existPharmacy.RowsAffected == 0 {
-		pharmacy := model.PharmacyApothecary{
+	if existPharmacyApothecary.RowsAffected == 0 {
+		pharmacyApothecary := model.PharmacyApothecary{
 			PharmacyID: req.PharmacyID,
 			ProcessAt:  time.Now(),
 			IsProcess:  true,
 		}
-		database.Datasource.DB().Create(&pharmacy)
+		database.Datasource.DB().Create(&pharmacyApothecary)
 	} else {
-		pharmacy.ProcessAt = time.Now()
-		pharmacy.IsProcess = true
-		database.Datasource.DB().Save(&pharmacy)
+		pharmacyApothecary.ProcessAt = time.Now()
+		pharmacyApothecary.IsProcess = true
+		database.Datasource.DB().Save(&pharmacyApothecary)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
 		"message": "Submited",
-		"data":    pharmacy,
 	})
 }
 
@@ -323,13 +328,11 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 	var pharmacyApothecary model.PharmacyApothecary
 	existPharmacy := database.Datasource.DB().Where("pharmacy_id", req.PharmacyID).First(&pharmacyApothecary)
 
-	if existPharmacy.RowsAffected == 0 {
-		pharmacyApothecary := model.PharmacyApothecary{
-			PharmacyID: req.PharmacyID,
-			SentAt:     time.Now(),
-			IsSent:     true,
-		}
-		database.Datasource.DB().Create(&pharmacyApothecary)
+	if existPharmacy.RowsAffected > 0 {
+
+		pharmacyApothecary.SentAt = time.Now()
+		pharmacyApothecary.IsSent = true
+		database.Datasource.DB().Save(&pharmacyApothecary)
 
 		// NOTIF_PHARMACY_TO_COURIER
 		var pharmacy model.Pharmacy
@@ -343,7 +346,7 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 		)
 		var conf model.Config
 		database.Datasource.DB().Where("name", valPharmacyToCourier).First(&conf)
-		replaceMessage := util.ContentPharmacyToCourier(conf.Value, pharmacy)
+		replaceMessage := util.ContentPharmacyToCourier(conf.Value, pharmacy, courier)
 
 		zenzivaPharmacyToCourier, err := handler.ZenzivaSendSMS(courier.Phone, replaceMessage)
 		if err != nil {
@@ -370,10 +373,6 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 			},
 		)
 
-	} else {
-		pharmacyApothecary.SentAt = time.Now()
-		pharmacyApothecary.IsSent = true
-		database.Datasource.DB().Save(&pharmacyApothecary)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -451,13 +450,10 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 	var pharmacyCourier model.PharmacyCourier
 	existPharmacy := database.Datasource.DB().Where("pharmacy_id", req.PharmacyID).First(&pharmacyCourier)
 
-	if existPharmacy.RowsAffected == 0 {
-		pharmacyCourier := model.PharmacyCourier{
-			PharmacyID: req.PharmacyID,
-			FinishAt:   time.Now(),
-			IsFinish:   true,
-		}
-		database.Datasource.DB().Create(&pharmacyCourier)
+	if existPharmacy.RowsAffected > 0 {
+		pharmacyCourier.FinishAt = time.Now()
+		pharmacyCourier.IsFinish = true
+		database.Datasource.DB().Save(&pharmacyCourier)
 
 		// NOTIF_COURIER_TO_PHARMACY
 		var pharmacy model.Pharmacy
@@ -470,7 +466,7 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 		)
 		var conf model.Config
 		database.Datasource.DB().Where("name", valCourierToPharmacy).First(&conf)
-		replaceMessage := util.ContentCourierToPharmacy(conf.Value, pharmacy)
+		replaceMessage := util.ContentCourierToPharmacy(conf.Value, pharmacy, courier)
 
 		zenzivaPharmacyToCourier, err := handler.ZenzivaSendSMS(courier.Phone, replaceMessage)
 		if err != nil {
@@ -497,16 +493,11 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 			},
 		)
 
-	} else {
-		pharmacyCourier.FinishAt = time.Now()
-		pharmacyCourier.IsFinish = true
-		database.Datasource.DB().Save(&pharmacyCourier)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,
 		"message": "Submited",
-		"data":    pharmacyCourier,
 	})
 }
 

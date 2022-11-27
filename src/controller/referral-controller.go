@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
@@ -49,19 +48,11 @@ func Referral(c *fiber.Ctx) error {
 	finishUrl := config.ViperEnv("APP_HOST") + "/referral/" + referral.ChannelUrl
 
 	if resultReferral.RowsAffected == 0 {
-		/**
-		 * INSERT TO Referral
-		 */
-		database.Datasource.DB().Create(&model.Referral{
-			ChatID:       chat.ID,
-			SpecialistID: specialist.ID,
-			DoctorID:     chat.DoctorID,
-		})
 
 		/**
 		 * SENDBIRD PROCESS
 		 */
-		channelUrl, err := sendbirdProcessReferral(specialist.ID, chat.DoctorID)
+		channelUrl, err := sendbirdProcessReferral(chat.ID, specialist.ID, chat.DoctorID)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -100,33 +91,23 @@ func ReferralChat(c *fiber.Ctx) error {
 	}
 
 	var referral model.Referral
-	isReferral := database.Datasource.DB().Where("channel_url", req.ChannelUrl).Preload("Specialist").Preload("Doctor").First(&referral)
-
-	if isReferral.RowsAffected == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error":   true,
-			"message": "Not Found",
-		})
-	}
+	database.Datasource.DB().Where("channel_url", req.ChannelUrl).Preload("Specialist").Preload("Doctor").First(&referral)
 
 	return c.Status(fiber.StatusOK).JSON(referral)
 }
 
-func sendbirdProcessReferral(specialistId uint, doctorId uint) (string, error) {
+func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (string, error) {
 
-	var referral model.Referral
-	database.Datasource.DB().
-		Where("specialist_id", specialistId).
-		Where("doctor_id", doctorId).
-		Where("DATE(created_at) = DATE(?)", time.Now()).
-		Preload("Doctor").
-		Preload("Specialist").
-		First(&referral)
+	var specialist model.Specialist
+	database.Datasource.DB().Where("id", specialistId).First(&specialist)
 
-		/**
-		 * Check User Sendbird
-		 */
-	getSpecialist, _, err := handler.SendbirdGetSpecialist(referral.Specialist)
+	var doctor model.Doctor
+	database.Datasource.DB().Where("id", doctorId).First(&doctor)
+
+	/**
+	 * Check User Sendbird
+	 */
+	getSpecialist, _, err := handler.SendbirdGetSpecialist(specialist)
 	if err != nil {
 		return "", errors.New(err.Error())
 	}
@@ -135,51 +116,53 @@ func sendbirdProcessReferral(specialistId uint, doctorId uint) (string, error) {
 	 * Add User Sendbird
 	 */
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   referral.Specialist.Phone,
+		Msisdn:   specialist.Phone,
 		Action:   actionCheckUser,
 		Response: getSpecialist,
 	})
 
 	// create group
-	createGroup, name, url, err := handler.SendbirdReferralCreateGroupChannel(referral.Specialist, referral.Doctor)
+	createGroup, name, url, err := handler.SendbirdReferralCreateGroupChannel(specialist, doctor)
 	if err != nil {
 		return "", errors.New(err.Error())
 	}
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   referral.Doctor.Phone,
+		Msisdn:   doctor.Phone,
 		Action:   actionCreateGroup,
 		Response: createGroup,
 	})
 
 	if name != "" && url != "" {
-		// insert to chat
+		// insert to chat referral
 		database.Datasource.DB().Create(
 			&model.Referral{
-				SpecialistID: referral.SpecialistID,
-				DoctorID:     referral.DoctorID,
+				ChatID:       chatId,
+				SpecialistID: specialistId,
+				DoctorID:     doctorId,
 				ChannelName:  name,
 				ChannelUrl:   url,
 			})
 
 		var conf model.Config
-		database.Datasource.DB().Where("name", "NOTIF_MESSAGE_DOCTOR").First(&conf)
+		database.Datasource.DB().Where("name", "NOTIF_MESSAGE_SPECIALIST").First(&conf)
 
-		urlWeb := config.ViperEnv("APP_HOST") + "/referral/" + url
-		replaceMessage := strings.NewReplacer("@v1", referral.Specialist.Name, "@v2", referral.Doctor.Name, "@v3", urlWeb)
+		urlWeb := config.ViperEnv("APP_HOST") + "/specialist/chat/" + url
+		replaceMessage := strings.NewReplacer("@v1", specialist.Name, "@v2", doctor.Name, "@v3", urlWeb)
 		message := replaceMessage.Replace(conf.Value)
 
-		// NOTIF MESSAGE TO DOCTOR
-		zenzifaNotif, err := handler.ZenzivaSendSMS(referral.Specialist.Phone, message)
+		// NOTIF MESSAGE TO SPECIALIST
+		zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, message)
 		if err != nil {
 			return "", errors.New(err.Error())
 		}
 		// insert to zenziva
 		database.Datasource.DB().Create(&model.Zenziva{
-			Msisdn:   referral.Specialist.Phone,
-			Action:   actionCreateNotif,
+			Msisdn:   specialist.Phone,
+			Action:   actionCreateNotifSP,
 			Response: zenzifaNotif,
 		})
+
 	}
 
 	return url, nil
