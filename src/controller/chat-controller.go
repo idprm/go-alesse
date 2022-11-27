@@ -52,7 +52,7 @@ func ChatDoctor(c *fiber.Ctx) error {
 	channelUrl := c.Query("channel_url")
 
 	var chat model.Chat
-	database.Datasource.DB().Where("channel_url", channelUrl).Preload("User").Preload("Doctor").Preload("Order").Preload("Doctor.Healthcenter").First(&chat)
+	database.Datasource.DB().Where("channel_url", channelUrl).Preload("User").Preload("Doctor").Preload("Order").Preload("Healthcenter").First(&chat)
 
 	return c.Status(fiber.StatusOK).JSON(&chat)
 }

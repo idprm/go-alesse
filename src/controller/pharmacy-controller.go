@@ -119,6 +119,12 @@ func GetAllPharmacy(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(pharmacies)
 }
 
+func GetPharmacy(c *fiber.Ctx) error {
+	var pharmacy model.Pharmacy
+	database.Datasource.DB().Where("slug", c.Params("slug")).First(&pharmacy)
+	return c.Status(fiber.StatusOK).JSON(pharmacy)
+}
+
 func GetPharmacyByDoctor(c *fiber.Ctx) error {
 	var pharmacy model.Pharmacy
 	database.Datasource.DB().Where("slug", c.Params("slug")).Preload("Chat.Doctor").Preload("Chat.User").First(&pharmacy)
@@ -419,10 +425,9 @@ func SaveTakePharmacy(c *fiber.Ctx) error {
 		database.Datasource.DB().Save(&pharmacy)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
 		"message": "Submited",
-		"data":    pharmacy,
 	})
 }
 

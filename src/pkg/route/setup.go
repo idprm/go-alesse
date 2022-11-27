@@ -80,6 +80,7 @@ func Setup(app *fiber.App) {
 
 	pharmacies := v1.Group("pharmacies")
 	pharmacies.Get("/", controller.GetAllPharmacy)
+	pharmacies.Get("/:slug", controller.GetPharmacy)
 	pharmacies.Get("/doctor/:slug", controller.GetPharmacyByDoctor)
 	pharmacies.Get("/apothecary/:slug", controller.GetPharmacyByApothecary)
 	pharmacies.Get("/courier/:slug", controller.GetPharmacyByCourier)
