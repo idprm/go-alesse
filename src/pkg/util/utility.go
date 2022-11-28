@@ -80,7 +80,7 @@ func ContentHomecareToPatientProgress(content string, homecare model.Homecare) s
 func ContentHomecareToPatientDone(content string, homecare model.Homecare) string {
 	// Hello pasien @patient, layanan homecare dari tim Homecare @health_center sudah selesai dilakukan. Semoga Anda lekas sembuh. @link
 	urlWeb := config.ViperEnv("APP_HOST") + "/feedback/" + homecare.Chat.ChannelUrl
-	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@link", urlWeb)
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
