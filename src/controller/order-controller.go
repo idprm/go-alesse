@@ -215,7 +215,7 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 		}
 		// insert to zenziva
 		database.Datasource.DB().Create(&model.Zenziva{
-			Msisdn:   order.User.Msisdn,
+			Msisdn:   order.Doctor.Phone,
 			Action:   actionCreateNotif,
 			Response: zenzifaNotif,
 		})
