@@ -131,6 +131,12 @@ func GetPharmacyByDoctor(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(pharmacy)
 }
 
+func GetAllPharmacyByMedicines(c *fiber.Ctx) error {
+	var medicines []model.PharmacyMedicine
+	database.Datasource.DB().Joins("Pharmacy", database.Datasource.DB().Where(&model.Pharmacy{Slug: c.Params("slug")})).Preload("Medicine").Find(&medicines)
+	return c.Status(fiber.StatusOK).JSON(medicines)
+}
+
 func GetPharmacyByApothecary(c *fiber.Ctx) error {
 	var pharmacy model.Pharmacy
 	database.Datasource.DB().Where("slug", c.Params("slug")).First(&pharmacy)
