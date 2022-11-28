@@ -42,7 +42,7 @@ func GetAllMedicalResume(c *fiber.Ctx) error {
 
 func GetMedicalResume(c *fiber.Ctx) error {
 	var medicalresume model.MedicalResume
-	database.Datasource.DB().Where("slug", c.Query("slug")).First(&medicalresume)
+	database.Datasource.DB().Where("slug", c.Params("slug")).First(&medicalresume)
 	return c.Status(fiber.StatusOK).JSON(medicalresume)
 }
 
@@ -89,7 +89,7 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		)
 
 		var chat model.Chat
-		database.Datasource.DB().Where("id", req.ChatID).First(&chat)
+		database.Datasource.DB().Where("id", req.ChatID).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
 
 		var conf model.Config
 		database.Datasource.DB().Where("name", valFeedbackToPatient).First(&conf)

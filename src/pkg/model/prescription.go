@@ -7,7 +7,7 @@ type Prescription struct {
 	ChatID          uint64 `json:"chat_id"`
 	Chat            Chat
 	Number          string `gorm:"size:25" json:"number"`
-	Slug            string `gorm:"size:50" json:"slug"`
+	Slug            string `gorm:"size:200;unique" json:"slug"`
 	PainComplaint   string `gorm:"type:text" json:"pain_complaint"`
 	Diagnosis       string `gorm:"type:text" json:"diagnosis"`
 	AllergyMedicine string `gorm:"type:text" json:"allergy_medicine"`

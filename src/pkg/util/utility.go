@@ -34,7 +34,7 @@ func ContentDoctorToPharmacy(content string, pharmacy model.Pharmacy) string {
 }
 
 func ContentPharmacyToCourier(content string, pharmacy model.Pharmacy, courier model.Courier) string {
-	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/courier/" + pharmacy.Chat.ChannelUrl
+	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/take/" + pharmacy.Chat.ChannelUrl
 	// Hello Kurir @courier, terdapat pemintaan pengantaran obat dari Farmasi @pharmacy untuk pasien @patient. Cek disini @link
 	replacer := strings.NewReplacer("@courier", courier.Name, "@pharmacy", pharmacy.Chat.Doctor.Name, "@patient", pharmacy.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
@@ -65,7 +65,7 @@ func ContentCourierToPatient(content string, pharmacy model.Pharmacy) string {
 func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
 	// Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link
 	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/visit/" + homecare.Chat.ChannelUrl
-	replacer := strings.NewReplacer("@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@doctor", homecare.Chat.Doctor.Name, "@patient", homecare.Chat.User.Name, "@link", urlWeb)
+	replacer := strings.NewReplacer("@health_center", homecare.Chat.Healthcenter.Name, "@doctor", homecare.Chat.Doctor.Name, "@patient", homecare.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }

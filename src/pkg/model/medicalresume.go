@@ -7,7 +7,7 @@ type MedicalResume struct {
 	ChatID         uint64 `json:"chat_id"`
 	Chat           Chat
 	Number         string  `gorm:"size:25" json:"number"`
-	Slug           string  `gorm:"size:25;unique" json:"slug"`
+	Slug           string  `gorm:"size:200;unique" json:"slug"`
 	DiseaseID      uint    `json:"disease_id"`
 	Disease        Disease `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Weight         uint    `gorm:"size:5" json:"weight"`
