@@ -49,9 +49,10 @@ func GetPrescription(c *fiber.Ctx) error {
 }
 
 func GetAllPrescriptionMedicine(c *fiber.Ctx) error {
-	var prescriptionmedicines model.PrescriptionMedicine
-	database.Datasource.DB().Where("prescription_id", c.Query("prescription_id")).Find(&prescriptionmedicines)
-	return c.Status(fiber.StatusOK).JSON(prescriptionmedicines)
+	var medicines []model.PrescriptionMedicine
+	database.Datasource.DB().Joins("Prescription", database.Datasource.DB().Where(&model.Prescription{Slug: c.Params("slug")})).Preload("Medicine").Find(&medicines)
+	return c.Status(fiber.StatusOK).JSON(medicines)
+
 }
 
 func SavePrescription(c *fiber.Ctx) error {

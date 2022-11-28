@@ -63,7 +63,7 @@ func Setup(app *fiber.App) {
 	prescriptions.Get("/", controller.GetAllPrescription)
 	prescriptions.Get("/detail/:number", controller.GetPrescription)
 	prescriptions.Post("/", controller.SavePrescription)
-	prescriptions.Get("/medicines", controller.GetAllPrescriptionMedicine)
+	prescriptions.Get("/medicines/:slug", controller.GetAllPrescriptionMedicine)
 	prescriptions.Post("/medicines", controller.SavePrescription)
 
 	homecares := v1.Group("homecares")
