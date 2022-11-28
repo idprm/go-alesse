@@ -224,7 +224,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 		replaceMessageDoctorToPharmacy := util.ContentDoctorToPharmacy(confDoctorToPharmacy.Value, phar)
 
 		var confPharmacyToPatient model.Config
-		database.Datasource.DB().Where("name", valDoctorToPharmacy).First(&confPharmacyToPatient)
+		database.Datasource.DB().Where("name", valPharmacyToPatient).First(&confPharmacyToPatient)
 		replaceMessagePharmacyToPatient := util.ContentDoctorToPharmacy(confPharmacyToPatient.Value, phar)
 
 		zenzifaNotifDoctorToPharmacy, err := handler.ZenzivaSendSMS(apothecary.Phone, replaceMessageDoctorToPharmacy)
