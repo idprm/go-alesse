@@ -225,7 +225,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 			},
 		)
 
-		return c.Status(fiber.StatusOK).JSON(
+		return c.Status(fiber.StatusCreated).JSON(
 			fiber.Map{
 				"error": false,
 				"token": token,
@@ -233,16 +233,16 @@ func RegisterHandler(c *fiber.Ctx) error {
 				"user":  usr,
 			},
 		)
+	} else {
+		return c.Status(fiber.StatusOK).JSON(
+			fiber.Map{
+				"error":    false,
+				"message":  "Already Active",
+				"redirect": "/auth/login",
+				"user":     user,
+			},
+		)
 	}
-
-	return c.Status(fiber.StatusOK).JSON(
-		fiber.Map{
-			"error":    false,
-			"message":  "Already Active",
-			"redirect": "/auth/login",
-		},
-	)
-
 }
 
 func VerifyHandler(c *fiber.Ctx) error {

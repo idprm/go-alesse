@@ -19,9 +19,9 @@ type User struct {
 	Address        string       `gorm:"type:text" json:"address"`
 	Latitude       string       `query:"latitude" json:"latitude"`
 	Longitude      string       `query:"longitude" json:"longitude"`
-	VerifyAt       time.Time    `gorm:"default:null" json:"verify_at"`
-	LoginAt        time.Time    `gorm:"default:null" json:"login_at"`
-	ActiveAt       time.Time    `gorm:"default:null" json:"active_at"`
+	VerifyAt       time.Time    `gorm:"default:null" json:"-"`
+	LoginAt        time.Time    `gorm:"default:null" json:"-"`
+	ActiveAt       time.Time    `gorm:"default:null" json:"-"`
 	IpAddress      string       `gorm:"size:25" json:"ip_address"`
 	IsVerify       bool         `gorm:"type:bool" json:"is_verify"`
 	IsBpjs         bool         `gorm:"type:bool" json:"is_bpjs"`

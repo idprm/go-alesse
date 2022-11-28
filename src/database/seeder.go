@@ -17,7 +17,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_MESSAGE_USER",
-		Value: "Hi *@v1* pembayaran Anda sudah terkonfirmasi. Untuk Chat dengan *@v2* klik disini @v3 (Add to contact agar link bisa diklik)",
+		Value: "Hello pasien *@v1*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852",
 	},
 	{
 		Name:  "NOTIF_MESSAGE_SPECIALIST",
@@ -70,7 +70,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_PROGRESS",
-		Value: "Hello pasien *@patient*, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.",
+		Value: "Hello pasien *@patient*, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini 08126853852",
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_DONE",
@@ -83,6 +83,10 @@ var configs = []model.Config{
 	{
 		Name:  "NOTIF_HOMECARE_TO_HEALTHOFFICE",
 		Value: "Hello Admin Dinkes, tim homecare *@health_center* sudah menyelesaikan layanan homecare untuk pasien *@patient*",
+	},
+	{
+		Name:  "NOTIF_FEEDBACK_TO_PATIENT",
+		Value: "Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? *@link*",
 	},
 }
 

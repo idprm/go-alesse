@@ -18,6 +18,13 @@ func TrimByteToString(b []byte) string {
 	return strings.Join(strings.Fields(str), " ")
 }
 
+func ContentNotifToUser(content string, homecare model.Homecare) string {
+	// Hello pasien *@user*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852
+	replacer := strings.NewReplacer("@user", homecare.Chat.User.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
 func ContentDoctorToPharmacy(content string, pharmacy model.Pharmacy) string {
 	// Hello Admin Farmasi @health_center terdapat pengajuan resep obat dari @doctor untuk pasien @patient Cek disini @link
 	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/process/" + pharmacy.Chat.ChannelUrl
@@ -81,6 +88,14 @@ func ContentHomecareToPatientDone(content string, homecare model.Homecare) strin
 func ContentHomecareToHealthoffice(content string, homecare model.Homecare) string {
 	// Hello Admin Dinkes, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient
 	replacer := strings.NewReplacer("@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@patient", homecare.Chat.User.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
+func ContentFeedbackToPatient(content string, chat model.Chat) string {
+	//Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? *@link*
+	urlWeb := config.ViperEnv("APP_HOST") + "/feedback/" + chat.ChannelUrl
+	replacer := strings.NewReplacer("@patient", chat.User.Name, "@health_center", chat.Healthcenter.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
