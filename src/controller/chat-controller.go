@@ -32,7 +32,7 @@ func ChatUser(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).First(&order)
 
 	var chat model.Chat
-	database.Datasource.DB().Where("order_id", order.ID).Preload("User").Preload("Doctor").First(&chat)
+	database.Datasource.DB().Where("order_id", order.ID).Where("is_leave", false).Preload("User").Preload("Doctor").First(&chat)
 
 	return c.Status(fiber.StatusOK).JSON(&chat)
 }
