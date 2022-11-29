@@ -624,7 +624,7 @@ func PharmacyPhoto(c *fiber.Ctx) error {
 	)
 
 	// err := database.NewRedisClient().RPush().Err();
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
 		"message": "Image uploaded successfully",
 		"data":    imageFile,
