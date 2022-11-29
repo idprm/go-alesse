@@ -580,7 +580,6 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 }
 
 func PharmacyPhoto(c *fiber.Ctx) error {
-	healthcenterId, _ := strconv.Atoi(c.FormValue("healthcenter_id"))
 	pharmacyId, _ := strconv.ParseUint(c.FormValue("pharmacy_id"), 0, 64)
 	file, err := c.FormFile("photo")
 
@@ -617,9 +616,8 @@ func PharmacyPhoto(c *fiber.Ctx) error {
 
 	database.Datasource.DB().Create(
 		&model.PharmacyUpload{
-			HealthcenterID: uint(healthcenterId),
-			PharmacyID:     pharmacyId,
-			Filename:       filename + "." + fileExt,
+			PharmacyID: pharmacyId,
+			Filename:   filename + "." + fileExt,
 		},
 	)
 

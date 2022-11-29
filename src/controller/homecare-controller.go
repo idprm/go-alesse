@@ -528,7 +528,6 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 }
 
 func HomecarePhoto(c *fiber.Ctx) error {
-	healthcenterId, _ := strconv.Atoi(c.FormValue("healthcenter_id"))
 	homecareId, _ := strconv.ParseUint(c.FormValue("homecare_id"), 0, 64)
 	file, err := c.FormFile("photo")
 
@@ -565,9 +564,8 @@ func HomecarePhoto(c *fiber.Ctx) error {
 
 	database.Datasource.DB().Create(
 		&model.HomecareUpload{
-			HealthcenterID: uint(healthcenterId),
-			HomecareID:     homecareId,
-			Filename:       filename + "." + fileExt,
+			HomecareID: homecareId,
+			Filename:   filename + "." + fileExt,
 		},
 	)
 
