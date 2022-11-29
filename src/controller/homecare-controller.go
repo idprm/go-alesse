@@ -331,41 +331,6 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 		}
 		database.Datasource.DB().Create(&homecareOfficer)
 
-		var hc model.Homecare
-		database.Datasource.DB().Where("id", req.HomecareID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
-
-		const (
-			valHomecareToPatientProgress = "NOTIF_HOMECARE_TO_PATIENT_PROGRESS"
-		)
-		var conf model.Config
-		database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&conf)
-		replaceMessage := util.ContentHomecareToPatientProgress(conf.Value, hc)
-
-		zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessage)
-		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-				"error":   true,
-				"message": err.Error(),
-			})
-		}
-
-		// insert to zenziva
-		database.Datasource.DB().Create(
-			&model.Zenziva{
-				Msisdn:   hc.Chat.User.Msisdn,
-				Action:   valHomecareToPatientProgress,
-				Response: zenzivaHomecareToPatientProgress,
-			},
-		)
-
-		// insert to notif
-		database.Datasource.DB().Create(
-			&model.Notif{
-				UserID:  hc.Chat.UserID,
-				Content: "",
-			},
-		)
-
 	} else {
 		homecareOfficer.OfficerID = req.OfficerID
 		homecareOfficer.DoctorID = req.DoctorID
@@ -375,6 +340,42 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 
 		database.Datasource.DB().Save(&homecareOfficer)
 	}
+
+	var hc model.Homecare
+	database.Datasource.DB().Where("id", req.HomecareID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
+
+	const (
+		valHomecareToPatientProgress = "NOTIF_HOMECARE_TO_PATIENT_PROGRESS"
+	)
+	var conf model.Config
+	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&conf)
+	replaceMessage := util.ContentHomecareToPatientProgress(conf.Value, hc)
+	log.Println(replaceMessage)
+
+	zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessage)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	// insert to zenziva
+	database.Datasource.DB().Create(
+		&model.Zenziva{
+			Msisdn:   hc.Chat.User.Msisdn,
+			Action:   valHomecareToPatientProgress,
+			Response: zenzivaHomecareToPatientProgress,
+		},
+	)
+
+	// insert to notif
+	database.Datasource.DB().Create(
+		&model.Notif{
+			UserID:  hc.Chat.UserID,
+			Content: "",
+		},
+	)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,

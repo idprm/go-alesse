@@ -19,8 +19,8 @@ func TrimByteToString(b []byte) string {
 }
 
 func ContentNotifToUser(content string, homecare model.Homecare) string {
-	// Hello pasien *@user*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852
-	replacer := strings.NewReplacer("@user", homecare.Chat.User.Name)
+	// Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name)
 	content = replacer.Replace(content)
 	return content
 }
@@ -64,7 +64,7 @@ func ContentCourierToPatient(content string, pharmacy model.Pharmacy) string {
 
 func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
 	// Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient Cek disini @link
-	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/visit/" + homecare.Chat.ChannelUrl
+	urlWeb := config.ViperEnv("APP_HOST") + "/homecare/visit/" + homecare.Chat.ChannelUrl
 	replacer := strings.NewReplacer("@health_center", homecare.Chat.Healthcenter.Name, "@doctor", homecare.Chat.Doctor.Name, "@patient", homecare.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
