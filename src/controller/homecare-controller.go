@@ -448,9 +448,13 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("name", valHomecareToPatientDone).First(&confHomecareToPatientDone)
 	replaceMessageHomecareToPatientDone := util.ContentHomecareToPatientDone(confHomecareToPatientDone.Value, hc)
 
+	log.Println(replaceMessageHomecareToPatientDone)
+
 	var confHomecareToHealthOffice model.Config
 	database.Datasource.DB().Where("name", valHomecareToHealthOffice).First(&confHomecareToHealthOffice)
 	replaceMessageHomecareToHealthOffice := util.ContentHomecareToHealthoffice(confHomecareToHealthOffice.Value, hc)
+
+	log.Println(replaceMessageHomecareToHealthOffice)
 
 	zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessageHomecareToPatientDone)
 	if err != nil {

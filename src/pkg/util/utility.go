@@ -28,7 +28,7 @@ func ContentNotifToUser(content string, homecare model.Homecare) string {
 func ContentDoctorToPharmacy(content string, pharmacy model.Pharmacy) string {
 	// Hello Admin Farmasi @health_center terdapat pengajuan resep obat dari @doctor untuk pasien @patient Cek disini @link
 	urlWeb := config.ViperEnv("APP_HOST") + "/pharmacy/process/" + pharmacy.Chat.ChannelUrl
-	replacer := strings.NewReplacer("@health_center", pharmacy.Chat.Doctor.Healthcenter.Name, "@doctor", pharmacy.Chat.Doctor.Name, "@patient", pharmacy.Chat.User.Name, "@link", urlWeb)
+	replacer := strings.NewReplacer("@health_center", pharmacy.Chat.Healthcenter.Name, "@doctor", pharmacy.Chat.Doctor.Name, "@patient", pharmacy.Chat.User.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
@@ -43,21 +43,21 @@ func ContentPharmacyToCourier(content string, pharmacy model.Pharmacy, courier m
 
 func ContentCourierToPharmacy(content string, pharmacy model.Pharmacy, courier model.Courier) string {
 	// Hello Admin Farmasi @health_center, Kurir @courier sudah menyelesaikan pengantaran obat ke pasien @patient
-	replacer := strings.NewReplacer("@health_center", pharmacy.Chat.Doctor.Healthcenter.Name, "@courier", courier.Name, "@patient", pharmacy.Chat.User.Name)
+	replacer := strings.NewReplacer("@health_center", pharmacy.Chat.Healthcenter.Name, "@courier", courier.Name, "@patient", pharmacy.Chat.User.Name)
 	content = replacer.Replace(content)
 	return content
 }
 
 func ContentPharmacyToPatient(content string, pharmacy model.Pharmacy) string {
 	// Hello pasien @patient obat Anda sedang disiapkan oleh Farmasi @health_center
-	replacer := strings.NewReplacer("@patient", pharmacy.Chat.User.Name, "@health_center", pharmacy.Chat.Doctor.Healthcenter.Name)
+	replacer := strings.NewReplacer("@patient", pharmacy.Chat.User.Name, "@health_center", pharmacy.Chat.Healthcenter.Name)
 	content = replacer.Replace(content)
 	return content
 }
 
 func ContentCourierToPatient(content string, pharmacy model.Pharmacy) string {
 	// Hello pasien @patient obat Anda sedang diantarkan oleh Kurir @health_center
-	replacer := strings.NewReplacer("@patient", pharmacy.Chat.User.Name, "@health_center", pharmacy.Chat.Doctor.Healthcenter.Name)
+	replacer := strings.NewReplacer("@patient", pharmacy.Chat.User.Name, "@health_center", pharmacy.Chat.Healthcenter.Name)
 	content = replacer.Replace(content)
 	return content
 }
@@ -72,7 +72,7 @@ func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
 
 func ContentHomecareToPatientProgress(content string, homecare model.Homecare) string {
 	// Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.
-	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Doctor.Healthcenter.Name)
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Healthcenter.Name)
 	content = replacer.Replace(content)
 	return content
 }
@@ -87,7 +87,7 @@ func ContentHomecareToPatientDone(content string, homecare model.Homecare) strin
 
 func ContentHomecareToHealthoffice(content string, homecare model.Homecare) string {
 	// Hello Admin Dinkes, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient
-	replacer := strings.NewReplacer("@health_center", homecare.Chat.Doctor.Healthcenter.Name, "@patient", homecare.Chat.User.Name)
+	replacer := strings.NewReplacer("@health_center", homecare.Chat.Healthcenter.Name, "@patient", homecare.Chat.User.Name)
 	content = replacer.Replace(content)
 	return content
 }
