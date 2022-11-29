@@ -438,7 +438,6 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	const (
 		valHomecareToPatientDone  = "NOTIF_HOMECARE_TO_PATIENT_DONE"
 		valHomecareToHealthOffice = "NOTIF_HOMECARE_TO_HEALTHOFFICE"
-		valFeedbackToPatient      = "NOTIF_FEEDBACK_TO_PATIENT"
 	)
 	var confHomecareToPatientDone model.Config
 	database.Datasource.DB().Where("name", valHomecareToPatientDone).First(&confHomecareToPatientDone)
@@ -473,6 +472,7 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 		},
 	)
 
+	// insert to zenziva
 	database.Datasource.DB().Create(
 		&model.Zenziva{
 			Msisdn:   superadmin.Phone,

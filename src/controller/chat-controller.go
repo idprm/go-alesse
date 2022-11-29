@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/handler"
@@ -31,7 +29,7 @@ func ChatUser(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
 
 	var order model.Order
-	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).Where("DATE(created_at) = DATE(?)", time.Now()).First(&order)
+	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).First(&order)
 
 	var chat model.Chat
 	isChat := database.Datasource.DB().Where("order_id", order.ID).Preload("User").Preload("Doctor").First(&chat)
