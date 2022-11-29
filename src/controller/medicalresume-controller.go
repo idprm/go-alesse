@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"log"
+
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
@@ -84,42 +86,6 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 			},
 		)
 
-		const (
-			valFeedbackToPatient = "NOTIF_FEEDBACK_TO_PATIENT"
-		)
-
-		var chat model.Chat
-		database.Datasource.DB().Where("id", req.ChatID).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
-
-		var conf model.Config
-		database.Datasource.DB().Where("name", valFeedbackToPatient).First(&conf)
-		replaceMessage := util.ContentFeedbackToPatient(conf.Value, chat)
-
-		zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, replaceMessage)
-		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-				"error":   true,
-				"message": err.Error(),
-			})
-		}
-
-		// insert to zenziva
-		database.Datasource.DB().Create(
-			&model.Zenziva{
-				Msisdn:   chat.User.Msisdn,
-				Action:   valFeedbackToPatient,
-				Response: zenzivaFeedbackToPatient,
-			},
-		)
-
-		// insert to notif
-		database.Datasource.DB().Create(
-			&model.Notif{
-				UserID:  chat.User.ID,
-				Content: "",
-			},
-		)
-
 	} else {
 		medicalresume.Weight = req.Weight
 		medicalresume.PainComplaints = req.PainComplaints
@@ -129,6 +95,43 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		medicalresume.IsSubmited = req.IsSubmited
 		database.Datasource.DB().Save(&medicalresume)
 	}
+
+	const (
+		valFeedbackToPatient = "NOTIF_FEEDBACK_TO_PATIENT"
+	)
+
+	var chat model.Chat
+	database.Datasource.DB().Where("id", req.ChatID).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
+
+	var conf model.Config
+	database.Datasource.DB().Where("name", valFeedbackToPatient).First(&conf)
+	replaceMessage := util.ContentFeedbackToPatient(conf.Value, chat)
+	log.Println(replaceMessage)
+
+	zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, replaceMessage)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	// insert to zenziva
+	database.Datasource.DB().Create(
+		&model.Zenziva{
+			Msisdn:   chat.User.Msisdn,
+			Action:   valFeedbackToPatient,
+			Response: zenzivaFeedbackToPatient,
+		},
+	)
+
+	// insert to notif
+	database.Datasource.DB().Create(
+		&model.Notif{
+			UserID:  chat.User.ID,
+			Content: "",
+		},
+	)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
