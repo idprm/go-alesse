@@ -17,7 +17,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_MESSAGE_USER",
-		Value: "Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852",
+		Value: "Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini *@phone*",
 	},
 	{
 		Name:  "NOTIF_MESSAGE_SPECIALIST",

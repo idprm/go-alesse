@@ -210,7 +210,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 		var confMessageToUser model.Config
 		database.Datasource.DB().Where("name", valMessageToUser).First(&confMessageToUser)
-		replaceMessageToUser := util.ContentNotifToUser(confMessageToUser.Value, hc)
+		replaceMessageToUser := util.ContentNotifToUser(confMessageToUser.Value, hc, officer)
 
 		log.Println(replaceMessageToUser)
 

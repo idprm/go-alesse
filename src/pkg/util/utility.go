@@ -18,7 +18,7 @@ func TrimByteToString(b []byte) string {
 	return strings.Join(strings.Fields(str), " ")
 }
 
-func ContentNotifToUser(content string, homecare model.Homecare) string {
+func ContentNotifToUser(content string, homecare model.Homecare, officer model.Officer) string {
 	// Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852
 	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name)
 	content = replacer.Replace(content)
