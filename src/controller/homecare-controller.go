@@ -344,12 +344,15 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	var hc model.Homecare
 	database.Datasource.DB().Where("id", req.HomecareID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
 
+	var officer model.Officer
+	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
+
 	const (
 		valHomecareToPatientProgress = "NOTIF_HOMECARE_TO_PATIENT_PROGRESS"
 	)
 	var conf model.Config
 	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&conf)
-	replaceMessage := util.ContentHomecareToPatientProgress(conf.Value, hc)
+	replaceMessage := util.ContentHomecareToPatientProgress(conf.Value, hc, officer)
 	log.Println(replaceMessage)
 
 	zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessage)

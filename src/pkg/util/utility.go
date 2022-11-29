@@ -70,9 +70,9 @@ func ContentDoctorToHomecare(content string, homecare model.Homecare) string {
 	return content
 }
 
-func ContentHomecareToPatientProgress(content string, homecare model.Homecare) string {
-	// Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 1 jam.
-	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Healthcenter.Name)
+func ContentHomecareToPatientProgress(content string, homecare model.Homecare, officer model.Officer) string {
+	//Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini *@phone*
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Healthcenter.Name, "@phone", officer.Phone)
 	content = replacer.Replace(content)
 	return content
 }
