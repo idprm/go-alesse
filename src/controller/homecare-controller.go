@@ -339,6 +339,7 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 		homecareOfficer.DoctorID = req.DoctorID
 		homecareOfficer.DriverID = req.DriverID
 		homecareOfficer.VisitedAt = time.Now()
+		homecareOfficer.FinishedAt = time.Time{}
 		homecareOfficer.IsVisited = true
 
 		database.Datasource.DB().Save(&homecareOfficer)
