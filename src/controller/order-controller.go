@@ -56,7 +56,6 @@ func OrderChat(c *fiber.Ctx) error {
 		Where("healthcenter_id", user.HealthcenterID).
 		Where("user_id", user.ID).
 		Where("doctor_id", doctor.ID).
-		Where("DATE(created_at) = DATE(?)", time.Now()).
 		First(&order)
 
 	finishUrl := config.ViperEnv("APP_HOST") + "/chat"
