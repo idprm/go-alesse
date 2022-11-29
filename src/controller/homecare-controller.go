@@ -206,9 +206,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 		database.Datasource.DB().Where("name", valDoctorToHomecare).First(&confDoctorToHomecare)
 		replaceMessageDoctorToHomecare := util.ContentDoctorToHomecare(confDoctorToHomecare.Value, hc)
 
+		log.Println(replaceMessageDoctorToHomecare)
+
 		var confMessageToUser model.Config
 		database.Datasource.DB().Where("name", valMessageToUser).First(&confMessageToUser)
 		replaceMessageToUser := util.ContentNotifToUser(confMessageToUser.Value, hc)
+
+		log.Println(replaceMessageToUser)
 
 		zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, replaceMessageDoctorToHomecare)
 		if err != nil {
