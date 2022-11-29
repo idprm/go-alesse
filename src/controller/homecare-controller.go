@@ -135,8 +135,11 @@ func GetHomecareAllPhoto(c *fiber.Ctx) error {
 }
 
 func GetAllHomecareByMedicines(c *fiber.Ctx) error {
+	var homecare model.Homecare
+	database.Datasource.DB().Where("slug", c.Params("slug")).First(&homecare)
+
 	var medicines []model.HomecareMedicine
-	database.Datasource.DB().Joins("Homecare", database.Datasource.DB().Where(&model.Homecare{Slug: c.Params("slug")})).Preload("Medicine").Find(&medicines)
+	database.Datasource.DB().Where("homecare_id", homecare.ID).Preload("Medicine").Find(&medicines)
 	return c.Status(fiber.StatusOK).JSON(medicines)
 }
 
