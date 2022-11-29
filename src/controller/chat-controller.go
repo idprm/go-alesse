@@ -104,6 +104,9 @@ func ChatDelete(c *fiber.Ctx) error {
 	var user model.User
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
 
+	var order model.Order
+	database.Datasource.DB().Where("user_id", user.ID).Delete(&order)
+
 	var chat model.Chat
 	database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
 
