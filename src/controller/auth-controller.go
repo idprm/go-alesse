@@ -1,13 +1,17 @@
 package controller
 
 import (
+	"log"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
+	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/middleware"
 	"github.com/idprm/go-alesse/src/pkg/model"
+	"github.com/idprm/go-alesse/src/pkg/util"
 )
 
 type LoginRequest struct {
@@ -140,14 +144,37 @@ func LoginHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	otp, _ := util.GenerateOTP(4)
+
 	// insert otp
 	database.Datasource.DB().Create(
 		&model.Verify{
 			Msisdn:   req.Msisdn,
-			Otp:      "1234",
+			Otp:      otp,
 			IsVerify: false,
 		},
 	)
+
+	var confNotifOTP model.Config
+	database.Datasource.DB().Where("name", "NOTIF_OTP_USER").First(&confNotifOTP)
+	replaceMessageNotifOTP := strings.NewReplacer("@v1", otp)
+	contentNotifOTP := replaceMessageNotifOTP.Replace(confNotifOTP.Value)
+
+	log.Println(contentNotifOTP)
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, contentNotifOTP)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(&model.Zenziva{
+		Msisdn:   user.Msisdn,
+		Action:   "OTP",
+		Response: zenzivaOTP,
+	})
 
 	return c.Status(fiber.StatusOK).JSON(
 		fiber.Map{
@@ -216,14 +243,37 @@ func RegisterHandler(c *fiber.Ctx) error {
 			})
 		}
 
+		otp, _ := util.GenerateOTP(4)
+
 		// insert otp
 		database.Datasource.DB().Create(
 			&model.Verify{
 				Msisdn:   req.Msisdn,
-				Otp:      "1234",
+				Otp:      otp,
 				IsVerify: false,
 			},
 		)
+
+		var confNotifOTP model.Config
+		database.Datasource.DB().Where("name", "NOTIF_OTP_USER").First(&confNotifOTP)
+		replaceMessageNotifOTP := strings.NewReplacer("@v1", otp)
+		contentNotifOTP := replaceMessageNotifOTP.Replace(confNotifOTP.Value)
+
+		log.Println(contentNotifOTP)
+
+		zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, contentNotifOTP)
+		if err != nil {
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+				"error":   true,
+				"message": err.Error(),
+			})
+		}
+		// insert to zenziva
+		database.Datasource.DB().Create(&model.Zenziva{
+			Msisdn:   user.Msisdn,
+			Action:   "OTP",
+			Response: zenzivaOTP,
+		})
 
 		return c.Status(fiber.StatusCreated).JSON(
 			fiber.Map{

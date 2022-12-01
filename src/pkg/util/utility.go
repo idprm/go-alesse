@@ -1,6 +1,7 @@
 package util
 
 import (
+	"crypto/rand"
 	"strings"
 	"time"
 
@@ -16,6 +17,23 @@ func TimeStamp() string {
 func TrimByteToString(b []byte) string {
 	str := string(b)
 	return strings.Join(strings.Fields(str), " ")
+}
+
+func GenerateOTP(length int) (string, error) {
+	const otpChars = "123456789"
+
+	buffer := make([]byte, length)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otpCharsLength := len(otpChars)
+	for i := 0; i < length; i++ {
+		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
+	}
+
+	return string(buffer), nil
 }
 
 func ContentNotifToUser(content string, homecare model.Homecare, officer model.Officer) string {
