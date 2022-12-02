@@ -101,6 +101,9 @@ func Setup(app *fiber.App) {
 	feedbacks.Get("/:slug", controller.GetFeedback)
 	feedbacks.Post("/", controller.SaveFeedback)
 
+	users := v1.Group("users")
+	users.Get("/:msisdn", controller.GetUserByMsisdn)
+
 	/**
 	 * AUTHENTICATED ROUTES
 	 */

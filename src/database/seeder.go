@@ -70,7 +70,7 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_PROGRESS",
-		Value: "Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini 08126853852",
+		Value: "Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini *@phone*",
 	},
 	{
 		Name:  "NOTIF_HOMECARE_TO_PATIENT_DONE",
