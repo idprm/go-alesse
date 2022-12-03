@@ -1,7 +1,7 @@
 package model
 
 type Admin struct {
-	ID             uint         `gorm:"primaryKey"`
+	ID             uint         `gorm:"primaryKey" json:"id"`
 	HealthcenterID uint         `json:"-"`
 	Healthcenter   Healthcenter `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Phone          string       `gorm:"size:15;unique" json:"phone"`

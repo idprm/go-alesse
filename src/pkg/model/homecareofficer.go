@@ -18,6 +18,8 @@ type HomecareOfficer struct {
 	Doctor               Doctor
 	OfficerID            uint `gorm:"default:null" json:"officer_id"`
 	Officer              Officer
+	ApothecaryID         uint `gorm:"default:null" json:"apothecary_id"`
+	Apothecary           Apothecary
 	DriverID             uint `gorm:"default:null" json:"driver_id"`
 	Driver               Driver
 	BloodPressure        string    `gorm:"size:15" json:"blood_pressure"`

@@ -29,7 +29,7 @@ func ChatUser(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
 
 	var order model.Order
-	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).First(&order)
+	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).Last(&order)
 
 	var chat model.Chat
 	database.Datasource.DB().Where("order_id", order.ID).Where("is_leave", false).Preload("User").Preload("Doctor").First(&chat)

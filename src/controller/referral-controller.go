@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -91,7 +92,7 @@ func ReferralChat(c *fiber.Ctx) error {
 	}
 
 	var referral model.Referral
-	database.Datasource.DB().Where("channel_url", req.ChannelUrl).Preload("Specialist").Preload("Doctor").First(&referral)
+	database.Datasource.DB().Where("channel_url", req.ChannelUrl).Preload("Chat").Preload("Specialist").Preload("Doctor").First(&referral)
 
 	return c.Status(fiber.StatusOK).JSON(referral)
 }
@@ -150,6 +151,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 		urlWeb := config.ViperEnv("APP_HOST") + "/specialist/chat/" + url
 		replaceMessage := strings.NewReplacer("@v1", specialist.Name, "@v2", doctor.Name, "@v3", urlWeb)
 		message := replaceMessage.Replace(conf.Value)
+		log.Println(message)
 
 		// NOTIF MESSAGE TO SPECIALIST
 		zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, message)

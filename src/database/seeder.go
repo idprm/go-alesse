@@ -90,6 +90,54 @@ var configs = []model.Config{
 	},
 }
 
+var statuses = []model.Status{
+	{
+		Name:         "DOCTOR_TO_PHARMACY",
+		ValueSystem:  "Request e-Resep",
+		ValuePatient: "Dokter meresepkan e-Resep Kode-e-Resep.e-Resep kode-e-resep telah dibuat. Menunggu Kurir untuk mengambil obat.",
+	},
+	{
+		Name:        "PHARMACY_TO_COURIER",
+		ValueSystem: "Request kurir",
+	},
+	{
+		Name:        "COURIER_TO_PHARMACY",
+		ValueSystem: "Obat telah diterima Pasien",
+	},
+	{
+		Name:        "PHARMACY_TO_PATIENT",
+		ValueSystem: "e-Resep sedang dibuat",
+	},
+	{
+		Name:        "COURIER_TO_PATIENT",
+		ValueSystem: "Kurir menuju alamat pasien",
+	},
+	{
+		Name:        "HOMECARE_TO_PATIENT_PROGRESS",
+		ValueSystem: "Tim Homecare menuju alamat pasien",
+	},
+	{
+		Name:        "HOMECARE_TO_PATIENT_DONE",
+		ValueSystem: "Pasien telah dikunjungi",
+	},
+	{
+		Name:        "DOCTOR_TO_HOMECARE",
+		ValueSystem: "Request homecare",
+	},
+	{
+		Name:        "MESSAGE_DOCTOR",
+		ValueSystem: "Request chat",
+	},
+	{
+		Name:        "CHAT_PROGRESS",
+		ValueSystem: "Sedang chat",
+	},
+	{
+		Name:        "CHAT_DONE",
+		ValueSystem: "Chat selesai",
+	},
+}
+
 var healthcenters = []model.Healthcenter{
 	{
 		Name:     "ANDALAS",

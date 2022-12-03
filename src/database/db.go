@@ -102,12 +102,12 @@ func Connect() {
 		&model.Sendbird{},
 		&model.Zenziva{},
 		&model.Notif{},
+		&model.Status{},
 	)
 
 	// TODO: Add seeders
 	var config []model.Config
 	var healthcenter []model.Healthcenter
-	var disease []model.Disease
 	var medicine []model.Medicine
 	var doctor []model.Doctor
 	var specialist []model.Specialist
@@ -117,10 +117,10 @@ func Connect() {
 	var courier []model.Courier
 	var admin []model.Admin
 	var superadmin []model.SuperAdmin
+	var status []model.Status
 
 	resultConfig := db.Find(&config)
 	resultHealthCenter := db.Find(&healthcenter)
-	resultDisease := db.Find(&disease)
 	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
 	resultSpecialist := db.Find(&specialist)
@@ -130,6 +130,7 @@ func Connect() {
 	resultCourier := db.Find(&courier)
 	resultAdmin := db.Find(&admin)
 	resultSuperadmin := db.Find(&superadmin)
+	resultStatus := db.Find(&status)
 
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
@@ -140,12 +141,6 @@ func Connect() {
 	if resultHealthCenter.RowsAffected == 0 {
 		for i, _ := range healthcenters {
 			db.Model(&model.Healthcenter{}).Create(&healthcenters[i])
-		}
-	}
-
-	if resultDisease.RowsAffected == 0 {
-		for i, _ := range diseases {
-			db.Model(&model.Disease{}).Create(&diseases[i])
 		}
 	}
 
@@ -200,6 +195,12 @@ func Connect() {
 	if resultSuperadmin.RowsAffected == 0 {
 		for i, _ := range superadmins {
 			db.Model(&model.SuperAdmin{}).Create(&superadmins[i])
+		}
+	}
+
+	if resultStatus.RowsAffected == 0 {
+		for i, _ := range statuses {
+			db.Model(&model.Status{}).Create(&statuses[i])
 		}
 	}
 

@@ -1,7 +1,7 @@
 package model
 
 type Apothecary struct {
-	ID             uint         `gorm:"primaryKey"`
+	ID             uint         `gorm:"primaryKey" json:"id"`
 	HealthcenterID uint         `json:"-"`
 	Healthcenter   Healthcenter `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Name           string       `gorm:"size:100;not null" json:"name"`

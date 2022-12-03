@@ -36,11 +36,12 @@ type HomecareMedicineRequest struct {
 }
 
 type HomecareOfficerRequest struct {
-	HomecareID uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
-	Slug       string `query:"slug" json:"slug"`
-	DoctorID   uint   `query:"doctor_id" json:"doctor_id"`
-	OfficerID  uint   `query:"officer_id" json:"officer_id"`
-	DriverID   uint   `query:"driver_id" json:"driver_id"`
+	HomecareID   uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
+	Slug         string `query:"slug" json:"slug"`
+	DoctorID     uint   `query:"doctor_id" json:"doctor_id"`
+	ApothecaryID uint   `query:"apothecary_id" json:"apothecary_id"`
+	OfficerID    uint   `query:"officer_id" json:"officer_id"`
+	DriverID     uint   `query:"driver_id" json:"driver_id"`
 }
 
 type HomecareResumeRequest struct {
@@ -120,7 +121,7 @@ func GetHomecareByOfficer(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("slug", c.Params("slug")).First(&homecare)
 
 	var homecareOfficer model.HomecareOfficer
-	database.Datasource.DB().Where("homecare_id", homecare.ID).Preload("Doctor").Preload("Officer").Preload("Driver").First(&homecareOfficer)
+	database.Datasource.DB().Where("homecare_id", homecare.ID).Preload("Doctor").Preload("Apothecary").Preload("Officer").Preload("Driver").First(&homecareOfficer)
 	return c.Status(fiber.StatusOK).JSON(homecareOfficer)
 }
 
@@ -326,19 +327,21 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 
 	if isExist.RowsAffected == 0 {
 		homecareOfficer := model.HomecareOfficer{
-			HomecareID: req.HomecareID,
-			Slug:       req.Slug,
-			OfficerID:  req.OfficerID,
-			DoctorID:   req.DoctorID,
-			DriverID:   req.DriverID,
-			VisitedAt:  time.Now(),
-			IsVisited:  true,
+			HomecareID:   req.HomecareID,
+			Slug:         req.Slug,
+			DoctorID:     req.DoctorID,
+			OfficerID:    req.OfficerID,
+			ApothecaryID: req.ApothecaryID,
+			DriverID:     req.DriverID,
+			VisitedAt:    time.Now(),
+			IsVisited:    true,
 		}
 		database.Datasource.DB().Create(&homecareOfficer)
 
 	} else {
-		homecareOfficer.OfficerID = req.OfficerID
 		homecareOfficer.DoctorID = req.DoctorID
+		homecareOfficer.OfficerID = req.OfficerID
+		homecareOfficer.ApothecaryID = req.ApothecaryID
 		homecareOfficer.DriverID = req.DriverID
 		homecareOfficer.VisitedAt = time.Now()
 		homecareOfficer.FinishedAt = time.Now()
