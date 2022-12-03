@@ -20,5 +20,7 @@ type Chat struct {
 	ChannelUrl     string       `gorm:"size:200;unique" json:"channel_url"`
 	LeaveAt        time.Time    `gorm:"default:null" json:"-"`
 	IsLeave        bool         `gorm:"type:bool;default:false" json:"is_leave"`
+	LatestStatus   string       `gorm:"size:250;default:null" json:"latest_status"`
+	LatestLabel    string       `gorm:"size:25;default:null" json:"latest_label"`
 	gorm.Model     `json:"-"`
 }

@@ -92,49 +92,76 @@ var configs = []model.Config{
 
 var statuses = []model.Status{
 	{
-		Name:         "DOCTOR_TO_PHARMACY",
-		ValueSystem:  "Request e-Resep",
-		ValuePatient: "Dokter meresepkan e-Resep Kode-e-Resep.e-Resep kode-e-resep telah dibuat. Menunggu Kurir untuk mengambil obat.",
+		Name:        "DOCTOR_TO_PHARMACY",
+		ValueSystem: "Request e-Resep",
+		ValueUser:   "Dokter @doctor meresepkan e-Resep @number",
+		ValueNotif:  "Hello Admin Farmasi *@health_center* terdapat pengajuan resep obat dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
 	},
 	{
 		Name:        "PHARMACY_TO_COURIER",
 		ValueSystem: "Request kurir",
+		ValueUser:   "e-Resep @number telah dibuat. Menunggu Kurir @courier untuk mengambil obat.",
+		ValueNotif:  "Hello Kurir *@courier*, terdapat pemintaan pengantaran obat dari Farmasi *@pharmacy* untuk pasien *@patient*. Cek disini *@link*",
 	},
 	{
 		Name:        "COURIER_TO_PHARMACY",
 		ValueSystem: "Obat telah diterima Pasien",
+		ValueUser:   "Pasien @patient telah menerima obat dari Kurir @courier.",
+		ValueNotif:  "Hello Admin Farmasi *@health_center*, Kurir *@courier* sudah menyelesaikan pengantaran obat ke pasien *@patient*",
 	},
 	{
 		Name:        "PHARMACY_TO_PATIENT",
 		ValueSystem: "e-Resep sedang dibuat",
+		ValueUser:   "Farmasi Puskesmas @health_center telah memverifikasi dan sedang menyiapkan e-Resep @number.",
+		ValueNotif:  "Hello pasien *@patient* obat Anda sedang disiapkan oleh Farmasi *@health_center*",
 	},
 	{
 		Name:        "COURIER_TO_PATIENT",
 		ValueSystem: "Kurir menuju alamat pasien",
+		ValueUser:   "Kurir telah mengambil obat di Farmasi Puskesmas @health_center dan menuju alamat Pasien @patient.",
+		ValueNotif:  "Hello pasien *@patient* obat Anda sedang diantarkan oleh Kurir *@health_center*",
 	},
 	{
 		Name:        "HOMECARE_TO_PATIENT_PROGRESS",
 		ValueSystem: "Tim Homecare menuju alamat pasien",
+		ValueUser:   "Tim Homecare Puskesmas @health_center telah memverifikasi Permintaan Homecare Dokter @doctor dan sedang menuju alamat Pasien @patient.",
+		ValueNotif:  "Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini *@phone*",
 	},
 	{
 		Name:        "HOMECARE_TO_PATIENT_DONE",
 		ValueSystem: "Pasien telah dikunjungi",
+		ValueUser:   "Tim Homecare Puskesmas @health_center telah mengunjungi dan memeriksa Pasien @patient.",
+		ValueNotif:  "Hello pasien *@patient*, layanan homecare dari tim Homecare *@health_center* sudah selesai dilakukan. Semoga Anda lekas sembuh. *@link*",
 	},
 	{
 		Name:        "DOCTOR_TO_HOMECARE",
 		ValueSystem: "Request homecare",
+		ValueUser:   "Dokter @doctor mengajukan Layanan Homecare untuk Pasien @patient",
+		ValueNotif:  "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
+	},
+	{
+		Name:        "FEEDBACK_TO_PATIENT",
+		ValueSystem: "Feedback user",
+		ValueUser:   "Mengirim link feedback kepada pasien @patient",
+		ValueNotif:  "Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? *@link*",
 	},
 	{
 		Name:        "MESSAGE_DOCTOR",
 		ValueSystem: "Request chat",
+		ValueUser:   "Pasien @patient mengajukan Konsultasi Dokter @doctor",
+		ValueNotif:  "Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
 	},
 	{
 		Name:        "CHAT_PROGRESS",
 		ValueSystem: "Sedang chat",
+		ValueUser:   "Pasien @patient memulai konsultasi dengan Dokter @doctor",
+		ValueNotif:  "-",
 	},
 	{
 		Name:        "CHAT_DONE",
 		ValueSystem: "Chat selesai",
+		ValueUser:   "Dokter @doctor mengakhiri konsultasi chat dengan Pasien @patient",
+		ValueNotif:  "-",
 	},
 }
 
@@ -506,29 +533,6 @@ var healthcenters = []model.Healthcenter{
 		Type:     "Non Rawat Inap",
 		Address:  "Jl. Toddopuli Raya No 96 Makassar",
 		IsActive: false,
-	},
-}
-
-var diseases = []model.Disease{
-	{
-		Name:     "Demam berdarah akibat virus",
-		IsActive: true,
-	},
-	{
-		Name:     "Kejang demam",
-		IsActive: true,
-	},
-	{
-		Name:     "Keracunan makanan",
-		IsActive: true,
-	},
-	{
-		Name:     "Penyakit jantung koroner",
-		IsActive: true,
-	},
-	{
-		Name:     "Penyakit gaya hidup",
-		IsActive: true,
 	},
 }
 

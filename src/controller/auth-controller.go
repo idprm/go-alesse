@@ -317,7 +317,7 @@ func VerifyHandler(c *fiber.Ctx) error {
 	}
 
 	var verify model.Verify
-	checkOTP := database.Datasource.DB().Where("msisdn", req.Msisdn).Where("otp", req.Otp).First(&verify)
+	checkOTP := database.Datasource.DB().Where("msisdn", req.Msisdn).Where("otp", req.Otp).Where("is_verify", false).First(&verify)
 
 	if checkOTP.Error != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": true, "message": "Not found"})

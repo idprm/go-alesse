@@ -97,15 +97,16 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	}
 
 	const (
-		valFeedbackToPatient = "NOTIF_FEEDBACK_TO_PATIENT"
+		valFeedbackToPatient = "FEEDBACK_TO_PATIENT"
 	)
 
 	var chat model.Chat
 	database.Datasource.DB().Where("id", req.ChatID).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
 
-	var conf model.Config
-	database.Datasource.DB().Where("name", valFeedbackToPatient).First(&conf)
-	replaceMessage := util.ContentFeedbackToPatient(conf.Value, chat)
+	var status model.Status
+	database.Datasource.DB().Where("name", valFeedbackToPatient).First(&status)
+	replaceMessage := util.ContentFeedbackToPatient(status.ValueNotif, chat)
+	// userMessage := ur
 	log.Println(replaceMessage)
 
 	zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, replaceMessage)
@@ -125,11 +126,13 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		},
 	)
 
-	// insert to notif
+	// insert to transaction
 	database.Datasource.DB().Create(
-		&model.Notif{
-			UserID:  chat.User.ID,
-			Content: "",
+		&model.Transaction{
+			ChatID:       chat.ID,
+			SystemStatus: "",
+			NotifStatus:  "",
+			UserStatus:   "",
 		},
 	)
 

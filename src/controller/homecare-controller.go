@@ -205,14 +205,16 @@ func SaveHomecare(c *fiber.Ctx) error {
 		database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
 
 		const (
-			valDoctorToHomecare = "NOTIF_DOCTOR_TO_HOMECARE"
+			valDoctorToHomecare = "DOCTOR_TO_HOMECARE"
 			valMessageToUser    = "NOTIF_MESSAGE_USER"
 		)
-		var confDoctorToHomecare model.Config
-		database.Datasource.DB().Where("name", valDoctorToHomecare).First(&confDoctorToHomecare)
-		replaceMessageDoctorToHomecare := util.ContentDoctorToHomecare(confDoctorToHomecare.Value, hc)
+		var statusDoctorToHomecare model.Status
+		database.Datasource.DB().Where("name", valDoctorToHomecare).First(&statusDoctorToHomecare)
+		notifMessageDoctorToHomecare := util.ContentDoctorToHomecare(statusDoctorToHomecare.ValueNotif, hc)
+		userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
 
-		log.Println(replaceMessageDoctorToHomecare)
+		log.Println(notifMessageDoctorToHomecare)
+		log.Println(userMessageDoctorToHomecare)
 
 		var confMessageToUser model.Config
 		database.Datasource.DB().Where("name", valMessageToUser).First(&confMessageToUser)
@@ -220,7 +222,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 		log.Println(replaceMessageToUser)
 
-		zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, replaceMessageDoctorToHomecare)
+		zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, notifMessageDoctorToHomecare)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -254,19 +256,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 			},
 		)
 
-		// insert to notif
+		// insert to transaction
 		database.Datasource.DB().Create(
-			&model.Notif{
-				UserID:  hc.Chat.UserID,
-				Content: "",
-			},
-		)
-
-		// insert to notif
-		database.Datasource.DB().Create(
-			&model.Notif{
-				UserID:  hc.Chat.UserID,
-				Content: "",
+			&model.Transaction{
+				ChatID:       hc.ChatID,
+				SystemStatus: statusDoctorToHomecare.ValueSystem,
+				NotifStatus:  notifMessageDoctorToHomecare,
+				UserStatus:   userMessageDoctorToHomecare,
 			},
 		)
 
@@ -357,14 +353,17 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
 
 	const (
-		valHomecareToPatientProgress = "NOTIF_HOMECARE_TO_PATIENT_PROGRESS"
+		valHomecareToPatientProgress = "HOMECARE_TO_PATIENT_PROGRESS"
 	)
-	var conf model.Config
-	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&conf)
-	replaceMessage := util.ContentHomecareToPatientProgress(conf.Value, hc, officer)
-	log.Println(replaceMessage)
+	var status model.Status
+	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&status)
+	notifMessageHomecareToPatientProgress := util.ContentHomecareToPatientProgress(status.ValueNotif, hc, officer)
+	userMessageHomecareToPatientProgress := util.StatusHomecareToPatientProgress(status.ValueNotif, hc)
 
-	zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessage)
+	log.Println(notifMessageHomecareToPatientProgress)
+	log.Println(userMessageHomecareToPatientProgress)
+
+	zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientProgress)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -381,11 +380,13 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 		},
 	)
 
-	// insert to notif
+	// insert to transaction
 	database.Datasource.DB().Create(
-		&model.Notif{
-			UserID:  hc.Chat.UserID,
-			Content: "",
+		&model.Transaction{
+			ChatID:       hc.ChatID,
+			SystemStatus: status.ValueSystem,
+			NotifStatus:  notifMessageHomecareToPatientProgress,
+			UserStatus:   userMessageHomecareToPatientProgress,
 		},
 	)
 
@@ -453,22 +454,24 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	database.Datasource.DB().First(&superadmin)
 
 	const (
-		valHomecareToPatientDone  = "NOTIF_HOMECARE_TO_PATIENT_DONE"
-		valHomecareToHealthOffice = "NOTIF_HOMECARE_TO_HEALTHOFFICE"
+		valHomecareToPatientDone  = "HOMECARE_TO_PATIENT_DONE"
+		valHomecareToHealthOffice = "HOMECARE_TO_HEALTHOFFICE"
 	)
-	var confHomecareToPatientDone model.Config
-	database.Datasource.DB().Where("name", valHomecareToPatientDone).First(&confHomecareToPatientDone)
-	replaceMessageHomecareToPatientDone := util.ContentHomecareToPatientDone(confHomecareToPatientDone.Value, hc)
+	var statusHomecareToPatientDone model.Status
+	database.Datasource.DB().Where("name", valHomecareToPatientDone).First(&statusHomecareToPatientDone)
+	notifMessageHomecareToPatientDone := util.ContentHomecareToPatientDone(statusHomecareToPatientDone.ValueNotif, hc)
+	userMessageHomecareToPatientDone := util.StatusHomecareToPatientDone(statusHomecareToPatientDone.ValueUser, hc)
 
-	log.Println(replaceMessageHomecareToPatientDone)
+	log.Println(notifMessageHomecareToPatientDone)
+	log.Println(userMessageHomecareToPatientDone)
 
-	var confHomecareToHealthOffice model.Config
-	database.Datasource.DB().Where("name", valHomecareToHealthOffice).First(&confHomecareToHealthOffice)
-	replaceMessageHomecareToHealthOffice := util.ContentHomecareToHealthoffice(confHomecareToHealthOffice.Value, hc)
+	var statusHomecareToHealthOffice model.Status
+	database.Datasource.DB().Where("name", valHomecareToHealthOffice).First(&statusHomecareToHealthOffice)
+	notifMessageHomecareToHealthOffice := util.ContentHomecareToHealthoffice(statusHomecareToHealthOffice.ValueNotif, hc)
 
-	log.Println(replaceMessageHomecareToHealthOffice)
+	log.Println(notifMessageHomecareToHealthOffice)
 
-	zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessageHomecareToPatientDone)
+	zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientDone)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -476,7 +479,7 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 		})
 	}
 
-	zenzivaHomecareToHealthOffice, err := handler.ZenzivaSendSMS(superadmin.Phone, replaceMessageHomecareToHealthOffice)
+	zenzivaHomecareToHealthOffice, err := handler.ZenzivaSendSMS(superadmin.Phone, notifMessageHomecareToHealthOffice)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -486,43 +489,30 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 
 	// insert to zenziva
 	database.Datasource.DB().Create(
-		&model.Zenziva{
+		&[]model.Zenziva{{
 			Msisdn:   hc.Chat.User.Msisdn,
 			Action:   valHomecareToPatientDone,
 			Response: zenzivaHomecareToPatientDone,
-		},
-	)
-
-	// insert to zenziva
-	database.Datasource.DB().Create(
-		&model.Zenziva{
+		}, {
 			Msisdn:   superadmin.Phone,
 			Action:   valHomecareToHealthOffice,
 			Response: zenzivaHomecareToHealthOffice,
-		},
-	)
-	// insert to notif
-	database.Datasource.DB().Create(
-		&model.Notif{
-			UserID:  hc.Chat.UserID,
-			Content: "",
-		},
+		}},
 	)
 
-	// insert to notif
+	// insert to transaction
 	database.Datasource.DB().Create(
-		&model.Notif{
-			UserID:  hc.Chat.UserID,
-			Content: "",
-		},
-	)
-
-	// insert to notif
-	database.Datasource.DB().Create(
-		&model.Notif{
-			UserID:  hc.Chat.UserID,
-			Content: "",
-		},
+		&[]model.Transaction{{
+			ChatID:       hc.ChatID,
+			SystemStatus: statusHomecareToPatientDone.ValueSystem,
+			NotifStatus:  notifMessageHomecareToPatientDone,
+			UserStatus:   userMessageHomecareToPatientDone,
+		}, {
+			ChatID:       hc.ChatID,
+			SystemStatus: statusHomecareToHealthOffice.ValueSystem,
+			NotifStatus:  notifMessageHomecareToHealthOffice,
+			UserStatus:   "",
+		}},
 	)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
