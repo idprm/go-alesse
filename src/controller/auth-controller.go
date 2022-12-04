@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
+	"github.com/idprm/go-alesse/src/pkg/config"
 	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/middleware"
 	"github.com/idprm/go-alesse/src/pkg/model"
@@ -146,7 +147,7 @@ func LoginHandler(c *fiber.Ctx) error {
 
 	otp, _ := util.GenerateOTP(4)
 
-	// insert otp
+	// insert to verify
 	database.Datasource.DB().Create(
 		&model.Verify{
 			Msisdn:   req.Msisdn,
@@ -254,24 +255,28 @@ func RegisterHandler(c *fiber.Ctx) error {
 			},
 		)
 
-		var confNotifOTP model.Config
-		database.Datasource.DB().Where("name", "NOTIF_OTP_USER").First(&confNotifOTP)
-		replaceMessageNotifOTP := strings.NewReplacer("@v1", otp)
-		contentNotifOTP := replaceMessageNotifOTP.Replace(confNotifOTP.Value)
+		const (
+			valOTPToUser = "OTP_TO_USER"
+		)
 
-		log.Println(contentNotifOTP)
+		var status model.Status
+		database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+		notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
-		zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, contentNotifOTP)
+		log.Println(notifMessageOTPToUser)
+
+		zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
 				"message": err.Error(),
 			})
 		}
+
 		// insert to zenziva
 		database.Datasource.DB().Create(&model.Zenziva{
 			Msisdn:   user.Msisdn,
-			Action:   "OTP",
+			Action:   valOTPToUser,
 			Response: zenzivaOTP,
 		})
 

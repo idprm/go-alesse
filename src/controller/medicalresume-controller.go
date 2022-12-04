@@ -105,11 +105,13 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 
 	var status model.Status
 	database.Datasource.DB().Where("name", valFeedbackToPatient).First(&status)
-	replaceMessage := util.ContentFeedbackToPatient(status.ValueNotif, chat)
-	// userMessage := ur
-	log.Println(replaceMessage)
+	notifMessage := util.ContentFeedbackToPatient(status.ValueNotif, chat)
+	userMessage := util.StatusFeedbackToPatient(status.ValueUser, chat)
 
-	zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, replaceMessage)
+	log.Println(notifMessage)
+	log.Println(userMessage)
+
+	zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, notifMessage)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -130,9 +132,9 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	database.Datasource.DB().Create(
 		&model.Transaction{
 			ChatID:       chat.ID,
-			SystemStatus: "",
-			NotifStatus:  "",
-			UserStatus:   "",
+			SystemStatus: status.ValueSystem,
+			NotifStatus:  notifMessage,
+			UserStatus:   userMessage,
 		},
 	)
 

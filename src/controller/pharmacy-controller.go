@@ -238,8 +238,8 @@ func SavePharmacy(c *fiber.Ctx) error {
 	 * NOTIF_DOCTOR_TO_PHARMACY
 	 */
 	const (
-		valDoctorToPharmacy  = "NOTIF_DOCTOR_TO_PHARMACY"
-		valPharmacyToPatient = "NOTIF_PHARMACY_TO_PATIENT"
+		valDoctorToPharmacy  = "DOCTOR_TO_PHARMACY"
+		valPharmacyToPatient = "PHARMACY_TO_PATIENT"
 	)
 
 	var phar model.Pharmacy
@@ -248,60 +248,57 @@ func SavePharmacy(c *fiber.Ctx) error {
 	var apothecary model.Apothecary
 	database.Datasource.DB().Where("healthcenter_id", phar.Chat.HealthcenterID).First(&apothecary)
 
-	var confDoctorToPharmacy model.Config
-	database.Datasource.DB().Where("name", valDoctorToPharmacy).First(&confDoctorToPharmacy)
-	replaceMessageDoctorToPharmacy := util.ContentDoctorToPharmacy(confDoctorToPharmacy.Value, phar)
+	var statusDoctorToPharmacy model.Status
+	database.Datasource.DB().Where("name", valDoctorToPharmacy).First(&statusDoctorToPharmacy)
+	notifMessageDoctorToPharmacy := util.ContentDoctorToPharmacy(statusDoctorToPharmacy.ValueNotif, phar)
+	userMessageDoctorToPharmacy := util.StatusDoctorToPharmacy(statusDoctorToPharmacy.ValueUser, phar)
 
-	log.Println(replaceMessageDoctorToPharmacy)
+	log.Println(notifMessageDoctorToPharmacy)
+	log.Println(userMessageDoctorToPharmacy)
 
-	var confPharmacyToPatient model.Config
-	database.Datasource.DB().Where("name", valPharmacyToPatient).First(&confPharmacyToPatient)
-	replaceMessagePharmacyToPatient := util.ContentDoctorToPharmacy(confPharmacyToPatient.Value, phar)
+	var statusPharmacyToPatient model.Status
+	database.Datasource.DB().Where("name", valPharmacyToPatient).First(&statusPharmacyToPatient)
+	notifMessagePharmacyToPatient := util.ContentPharmacyToPatient(statusPharmacyToPatient.ValueNotif, phar)
+	userMessagePharmacyToPatient := util.StatusPharmacyToPatient(statusPharmacyToPatient.ValueUser, phar)
 
-	log.Println(replaceMessagePharmacyToPatient)
+	log.Println(notifMessagePharmacyToPatient)
+	log.Println(userMessagePharmacyToPatient)
 
-	zenzifaNotifDoctorToPharmacy, err := handler.ZenzivaSendSMS(apothecary.Phone, replaceMessageDoctorToPharmacy)
+	zenzifaNotifDoctorToPharmacy, err := handler.ZenzivaSendSMS(apothecary.Phone, notifMessageDoctorToPharmacy)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 
-	zenzifaNotifPharmacyToPatient, err := handler.ZenzivaSendSMS(phar.Chat.User.Msisdn, replaceMessagePharmacyToPatient)
+	zenzifaNotifPharmacyToPatient, err := handler.ZenzivaSendSMS(phar.Chat.User.Msisdn, notifMessagePharmacyToPatient)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 
 	// insert to zenziva
-	database.Datasource.DB().Create(&model.Zenziva{
-		Msisdn:   apothecary.Phone,
-		Action:   valDoctorToPharmacy,
-		Response: zenzifaNotifDoctorToPharmacy,
-	})
-
-	// insert to zenziva
-	database.Datasource.DB().Create(&model.Zenziva{
-		Msisdn:   phar.Chat.User.Msisdn,
-		Action:   valPharmacyToPatient,
-		Response: zenzifaNotifPharmacyToPatient,
-	})
-
-	// insert to notif
 	database.Datasource.DB().Create(
-		&model.Transaction{
-			ChatID:       phar.ChatID,
-			SystemStatus: "",
-			NotifStatus:  "",
-			UserStatus:   "",
-		},
-	)
+		&[]model.Zenziva{{
+			Msisdn:   apothecary.Phone,
+			Action:   valDoctorToPharmacy,
+			Response: zenzifaNotifDoctorToPharmacy,
+		}, {
+			Msisdn:   phar.Chat.User.Msisdn,
+			Action:   valPharmacyToPatient,
+			Response: zenzifaNotifPharmacyToPatient,
+		}})
 
-	// insert to notif
+	// insert to transaction
 	database.Datasource.DB().Create(
-		&model.Transaction{
+		&[]model.Transaction{{
 			ChatID:       phar.ChatID,
-			SystemStatus: "",
-			NotifStatus:  "",
-			UserStatus:   "",
-		},
+			SystemStatus: statusDoctorToPharmacy.ValueSystem,
+			NotifStatus:  notifMessageDoctorToPharmacy,
+			UserStatus:   userMessageDoctorToPharmacy,
+		}, {
+			ChatID:       phar.ChatID,
+			SystemStatus: statusPharmacyToPatient.ValueSystem,
+			NotifStatus:  notifMessagePharmacyToPatient,
+			UserStatus:   userMessagePharmacyToPatient,
+		}},
 	)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -392,13 +389,14 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 		database.Datasource.DB().Where("healthcenter_id", pharmacy.Chat.HealthcenterID).First(&courier)
 
 		const (
-			valPharmacyToCourier = "NOTIF_PHARMACY_TO_COURIER"
+			valPharmacyToCourier = "PHARMACY_TO_COURIER"
 		)
-		var conf model.Config
-		database.Datasource.DB().Where("name", valPharmacyToCourier).First(&conf)
-		replaceMessage := util.ContentPharmacyToCourier(conf.Value, pharmacy, courier)
+		var status model.Status
+		database.Datasource.DB().Where("name", valPharmacyToCourier).First(&status)
+		notifMessage := util.ContentPharmacyToCourier(status.ValueNotif, pharmacy, courier)
+		userMessage := util.StatusPharmacyToCourier(status.ValueUser, pharmacy, courier)
 
-		zenzivaPharmacyToCourier, err := handler.ZenzivaSendSMS(courier.Phone, replaceMessage)
+		zenzivaPharmacyToCourier, err := handler.ZenzivaSendSMS(courier.Phone, notifMessage)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -415,13 +413,13 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 			},
 		)
 
-		// insert to notif
+		// insert to transaction
 		database.Datasource.DB().Create(
 			&model.Transaction{
 				ChatID:       pharmacy.ChatID,
-				SystemStatus: "",
-				NotifStatus:  "",
-				UserStatus:   "",
+				SystemStatus: status.ValueSystem,
+				NotifStatus:  notifMessage,
+				UserStatus:   userMessage,
 			},
 		)
 
@@ -467,18 +465,19 @@ func SaveTakePharmacy(c *fiber.Ctx) error {
 		database.Datasource.DB().Create(&pharmacyCourier)
 
 		const (
-			valCourierToPatient = "NOTIF_COURIER_TO_PATIENT"
+			valCourierToPatient = "COURIER_TO_PATIENT"
 		)
 
 		// NOTIF_COURIER_TO_PHARMACY
 		var pharmacy model.Pharmacy
 		database.Datasource.DB().Where("id", req.PharmacyID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&pharmacy)
 
-		var confCourierToPatient model.Config
-		database.Datasource.DB().Where("name", valCourierToPatient).First(&confCourierToPatient)
-		replaceMessageCourierToPatient := util.ContentCourierToPatient(confCourierToPatient.Value, pharmacy)
+		var status model.Status
+		database.Datasource.DB().Where("name", valCourierToPatient).First(&status)
+		notifMessage := util.ContentCourierToPatient(status.ValueNotif, pharmacy)
+		userMessage := util.StatusCourierToPatient(status.ValueUser, pharmacy)
 
-		zenzivaCourierToPatient, err := handler.ZenzivaSendSMS(pharmacy.Chat.User.Msisdn, replaceMessageCourierToPatient)
+		zenzivaCourierToPatient, err := handler.ZenzivaSendSMS(pharmacy.Chat.User.Msisdn, notifMessage)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -495,13 +494,13 @@ func SaveTakePharmacy(c *fiber.Ctx) error {
 			},
 		)
 
-		// insert to notif
+		// insert to transaction
 		database.Datasource.DB().Create(
 			&model.Transaction{
 				ChatID:       pharmacy.ChatID,
-				SystemStatus: "",
-				NotifStatus:  "",
-				UserStatus:   "",
+				SystemStatus: status.ValueSystem,
+				NotifStatus:  notifMessage,
+				UserStatus:   userMessage,
 			},
 		)
 
@@ -610,20 +609,10 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 				UserStatus:   userMessageCourierToPharmacy,
 			}, {
 				ChatID:       pharmacy.ChatID,
-				SystemStatus: statusCourierToPharmacy.ValueSystem,
+				SystemStatus: statusFeedbackToPatient.ValueSystem,
 				NotifStatus:  notifMessageFeedbackToPatient,
 				UserStatus:   userMessageFeedbackToPatient,
 			}},
-		)
-
-		// insert to notif
-		database.Datasource.DB().Create(
-			&model.Transaction{
-				ChatID:       pharmacy.ChatID,
-				SystemStatus: "",
-				NotifStatus:  "",
-				UserStatus:   "",
-			},
 		)
 
 	}

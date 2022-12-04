@@ -36,9 +36,45 @@ func GenerateOTP(length int) (string, error) {
 	return string(buffer), nil
 }
 
-func ContentNotifToUser(content string, homecare model.Homecare, officer model.Officer) string {
-	// Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini 08126853852
-	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name)
+func ContentOTPToUser(content string, otp string, link string) string {
+	// Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link
+	replacer := strings.NewReplacer("@otp", otp, "@link", link)
+	content = replacer.Replace(content)
+	return content
+}
+
+func StatusOTPToUser(content string, otp string, user model.User) string {
+	// Mengirim kode OTP @otp kepada pasien @patient
+	replacer := strings.NewReplacer("@otp", otp, "@patient", user.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
+func ContentMessageToUser(content string, homecare model.Homecare, officer model.Officer) string {
+	// Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini @phone
+	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@phone", officer.Phone)
+	content = replacer.Replace(content)
+	return content
+}
+
+func StatusMessageToUser(content string, homecare model.Homecare, officer model.Officer) string {
+	// Mengirim pesan kontak @phone kepada pasien @patient
+	replacer := strings.NewReplacer("@phone", officer.Phone, "@patient", homecare.Chat.User.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
+func ContentMessageToSpecialist(content string, specialist model.Specialist, doctor model.Doctor, url string) string {
+	// Hi *@specialist*, Dokter Umum *@doctor* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat @link
+	urlWeb := config.ViperEnv("APP_HOST") + "/specialist/chat/" + url
+	replacer := strings.NewReplacer("@specialist", specialist.Name, "@doctor", doctor.Name, "@link", urlWeb)
+	content = replacer.Replace(content)
+	return content
+}
+
+func StatusMessageToSpecialist(content string, specialist model.Specialist, doctor model.Doctor) string {
+	// Dokter umum @doctor mengajukan Konsultasi dengan Dokter spesialis @specialist
+	replacer := strings.NewReplacer("@doctor", doctor.Name, "@specialist", specialist.Name)
 	content = replacer.Replace(content)
 	return content
 }

@@ -92,6 +92,30 @@ var configs = []model.Config{
 
 var statuses = []model.Status{
 	{
+		Name:        "OTP_TO_USER",
+		ValueSystem: "Kirim kode OTP",
+		ValueUser:   "Mengirim kode OTP @otp kepada pasien @patient",
+		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link",
+	},
+	{
+		Name:        "MESSAGE_TO_DOCTOR",
+		ValueSystem: "Request chat",
+		ValueUser:   "Pasien @patient mengajukan Konsultasi Dokter @doctor",
+		ValueNotif:  "Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
+	},
+	{
+		Name:        "MESSAGE_TO_SPECIALIST",
+		ValueSystem: "Request chat specialist",
+		ValueUser:   "Dokter umum @doctor mengajukan Konsultasi dengan Dokter spesialis @specialist",
+		ValueNotif:  "Hi *@specialist*, Dokter Umum *@doctor* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
+	},
+	{
+		Name:        "MESSAGE_TO_USER",
+		ValueSystem: "Auto message pasien",
+		ValueUser:   "Mengirim pesan kontak @phone kepada pasien @patient",
+		ValueNotif:  "Hello pasien *@patient*, Apabila ada pertanyaan silakan hubungi nomor ini @phone",
+	},
+	{
 		Name:        "DOCTOR_TO_PHARMACY",
 		ValueSystem: "Request e-Resep",
 		ValueUser:   "Dokter @doctor meresepkan e-Resep @number",
@@ -144,12 +168,6 @@ var statuses = []model.Status{
 		ValueSystem: "Feedback user",
 		ValueUser:   "Mengirim link feedback kepada pasien @patient",
 		ValueNotif:  "Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? *@link*",
-	},
-	{
-		Name:        "MESSAGE_DOCTOR",
-		ValueSystem: "Request chat",
-		ValueUser:   "Pasien @patient mengajukan Konsultasi Dokter @doctor",
-		ValueNotif:  "Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
 	},
 	{
 		Name:        "CHAT_PROGRESS",

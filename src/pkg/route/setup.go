@@ -103,6 +103,7 @@ func Setup(app *fiber.App) {
 
 	users := v1.Group("users")
 	users.Get("/:msisdn", controller.GetUserByMsisdn)
+	users.Get("/transactions/:msisdn", controller.GetTransactionByUser)
 
 	/**
 	 * AUTHENTICATED ROUTES

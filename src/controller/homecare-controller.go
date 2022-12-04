@@ -206,7 +206,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 		const (
 			valDoctorToHomecare = "DOCTOR_TO_HOMECARE"
-			valMessageToUser    = "NOTIF_MESSAGE_USER"
+			valMessageToUser    = "MESSAGE_TO_USER"
 		)
 		var statusDoctorToHomecare model.Status
 		database.Datasource.DB().Where("name", valDoctorToHomecare).First(&statusDoctorToHomecare)
@@ -216,11 +216,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 		log.Println(notifMessageDoctorToHomecare)
 		log.Println(userMessageDoctorToHomecare)
 
-		var confMessageToUser model.Config
-		database.Datasource.DB().Where("name", valMessageToUser).First(&confMessageToUser)
-		replaceMessageToUser := util.ContentNotifToUser(confMessageToUser.Value, hc, officer)
+		var statusMessageToUser model.Status
+		database.Datasource.DB().Where("name", valMessageToUser).First(&statusMessageToUser)
+		notifMessageToUser := util.ContentMessageToUser(statusMessageToUser.ValueNotif, hc, officer)
+		userMessageToUser := util.StatusMessageToUser(statusMessageToUser.ValueUser, hc, officer)
 
-		log.Println(replaceMessageToUser)
+		log.Println(notifMessageToUser)
+		log.Println(userMessageToUser)
 
 		zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, notifMessageDoctorToHomecare)
 		if err != nil {
@@ -230,16 +232,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 			})
 		}
 
-		// insert to zenziva
-		database.Datasource.DB().Create(
-			&model.Zenziva{
-				Msisdn:   officer.Phone,
-				Action:   valDoctorToHomecare,
-				Response: zenzivaDoctorToHomecare,
-			},
-		)
-
-		zenzivaMessageToUser, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, replaceMessageToUser)
+		zenzivaMessageToUser, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageToUser)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -249,21 +242,30 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 		// insert to zenziva
 		database.Datasource.DB().Create(
-			&model.Zenziva{
+			&[]model.Zenziva{{
+				Msisdn:   officer.Phone,
+				Action:   valDoctorToHomecare,
+				Response: zenzivaDoctorToHomecare,
+			}, {
 				Msisdn:   hc.Chat.User.Msisdn,
 				Action:   valMessageToUser,
 				Response: zenzivaMessageToUser,
-			},
+			}},
 		)
 
 		// insert to transaction
 		database.Datasource.DB().Create(
-			&model.Transaction{
+			&[]model.Transaction{{
 				ChatID:       hc.ChatID,
 				SystemStatus: statusDoctorToHomecare.ValueSystem,
 				NotifStatus:  notifMessageDoctorToHomecare,
 				UserStatus:   userMessageDoctorToHomecare,
-			},
+			}, {
+				ChatID:       hc.ChatID,
+				SystemStatus: statusDoctorToHomecare.ValueSystem,
+				NotifStatus:  notifMessageToUser,
+				UserStatus:   userMessageToUser,
+			}},
 		)
 
 	} else {

@@ -3,13 +3,13 @@ package controller
 import (
 	"errors"
 	"log"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/config"
 	"github.com/idprm/go-alesse/src/pkg/handler"
 	"github.com/idprm/go-alesse/src/pkg/model"
+	"github.com/idprm/go-alesse/src/pkg/util"
 )
 
 type ReferralRequest struct {
@@ -145,16 +145,21 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 				ChannelUrl:   url,
 			})
 
-		var conf model.Config
-		database.Datasource.DB().Where("name", "NOTIF_MESSAGE_SPECIALIST").First(&conf)
+		const (
+			valMessageToSpecialist = "MESSAGE_TO_SPECIALIST"
+		)
 
-		urlWeb := config.ViperEnv("APP_HOST") + "/specialist/chat/" + url
-		replaceMessage := strings.NewReplacer("@v1", specialist.Name, "@v2", doctor.Name, "@v3", urlWeb)
-		message := replaceMessage.Replace(conf.Value)
-		log.Println(message)
+		var status model.Status
+		database.Datasource.DB().Where("name", valMessageToSpecialist).First(&status)
+
+		notifMessageToSpecialist := util.ContentMessageToSpecialist(status.ValueNotif, specialist, doctor, url)
+		userMessageToSpecialist := util.StatusMessageToSpecialist(status.ValueUser, specialist, doctor)
+
+		log.Println(notifMessageToSpecialist)
+		log.Println(userMessageToSpecialist)
 
 		// NOTIF MESSAGE TO SPECIALIST
-		zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, message)
+		zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, notifMessageToSpecialist)
 		if err != nil {
 			return "", errors.New(err.Error())
 		}
@@ -163,6 +168,14 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 			Msisdn:   specialist.Phone,
 			Action:   actionCreateNotifSP,
 			Response: zenzifaNotif,
+		})
+
+		// insert to transaction
+		database.Datasource.DB().Create(&model.Transaction{
+			ChatID:       chatId,
+			SystemStatus: status.ValueSystem,
+			NotifStatus:  notifMessageToSpecialist,
+			UserStatus:   userMessageToSpecialist,
 		})
 
 	}
