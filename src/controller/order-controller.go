@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	"strings"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -200,15 +200,21 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 			ChannelUrl:     url,
 		})
 
-		var conf model.Config
-		database.Datasource.DB().Where("name", "NOTIF_MESSAGE_DOCTOR").First(&conf)
+		const (
+			valMessageToDoctor = "MESSAGE_TO_DOCTOR"
+		)
 
-		urlWeb := config.ViperEnv("APP_HOST") + "/chat/" + url
-		replaceMessage := strings.NewReplacer("@v1", order.Doctor.Name, "@v2", order.User.Name, "@v3", urlWeb)
-		message := replaceMessage.Replace(conf.Value)
+		var status model.Status
+		database.Datasource.DB().Where("name", valMessageToDoctor).First(&status)
+
+		notifMessage := util.ContentMessageToDoctor(status.ValueNotif, order, url)
+		userMessage := util.StatusMessageToDoctor(status.ValueUser, order)
+
+		log.Println(notifMessage)
+		log.Println(userMessage)
 
 		// NOTIF MESSAGE TO DOCTOR
-		zenzifaNotif, err := handler.ZenzivaSendSMS(order.Doctor.Phone, message)
+		zenzifaNotif, err := handler.ZenzivaSendSMS(order.Doctor.Phone, notifMessage)
 		if err != nil {
 			return errors.New(err.Error())
 		}
@@ -231,6 +237,9 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 			Action:   actionCreateMessage,
 			Response: autoMessageDoctor,
 		})
+
+		// insert transaction
+
 	}
 
 	return nil

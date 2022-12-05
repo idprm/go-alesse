@@ -289,11 +289,13 @@ func SavePharmacy(c *fiber.Ctx) error {
 	// insert to transaction
 	database.Datasource.DB().Create(
 		&[]model.Transaction{{
+			UserID:       phar.Chat.UserID,
 			ChatID:       phar.ChatID,
 			SystemStatus: statusDoctorToPharmacy.ValueSystem,
 			NotifStatus:  notifMessageDoctorToPharmacy,
 			UserStatus:   userMessageDoctorToPharmacy,
 		}, {
+			UserID:       phar.Chat.UserID,
 			ChatID:       phar.ChatID,
 			SystemStatus: statusPharmacyToPatient.ValueSystem,
 			NotifStatus:  notifMessagePharmacyToPatient,
@@ -416,6 +418,7 @@ func SaveSentPharmacy(c *fiber.Ctx) error {
 		// insert to transaction
 		database.Datasource.DB().Create(
 			&model.Transaction{
+				UserID:       pharmacy.Chat.UserID,
 				ChatID:       pharmacy.ChatID,
 				SystemStatus: status.ValueSystem,
 				NotifStatus:  notifMessage,
@@ -497,6 +500,7 @@ func SaveTakePharmacy(c *fiber.Ctx) error {
 		// insert to transaction
 		database.Datasource.DB().Create(
 			&model.Transaction{
+				UserID:       pharmacy.Chat.UserID,
 				ChatID:       pharmacy.ChatID,
 				SystemStatus: status.ValueSystem,
 				NotifStatus:  notifMessage,
@@ -603,11 +607,13 @@ func SaveFinishPharmacy(c *fiber.Ctx) error {
 		// insert to transaction
 		database.Datasource.DB().Create(
 			&[]model.Transaction{{
+				UserID:       pharmacy.Chat.UserID,
 				ChatID:       pharmacy.ChatID,
 				SystemStatus: statusCourierToPharmacy.ValueSystem,
 				NotifStatus:  notifMessageCourierToPharmacy,
 				UserStatus:   userMessageCourierToPharmacy,
 			}, {
+				UserID:       pharmacy.Chat.UserID,
 				ChatID:       pharmacy.ChatID,
 				SystemStatus: statusFeedbackToPatient.ValueSystem,
 				NotifStatus:  notifMessageFeedbackToPatient,

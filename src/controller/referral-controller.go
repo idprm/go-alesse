@@ -99,6 +99,9 @@ func ReferralChat(c *fiber.Ctx) error {
 
 func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (string, error) {
 
+	var chat model.Chat
+	database.Datasource.DB().Where("id", chatId).First(&chat)
+
 	var specialist model.Specialist
 	database.Datasource.DB().Where("id", specialistId).First(&specialist)
 
@@ -171,12 +174,15 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 		})
 
 		// insert to transaction
-		database.Datasource.DB().Create(&model.Transaction{
-			ChatID:       chatId,
-			SystemStatus: status.ValueSystem,
-			NotifStatus:  notifMessageToSpecialist,
-			UserStatus:   userMessageToSpecialist,
-		})
+		database.Datasource.DB().Create(
+			&model.Transaction{
+				UserID:       chat.UserID,
+				ChatID:       chatId,
+				SystemStatus: status.ValueSystem,
+				NotifStatus:  notifMessageToSpecialist,
+				UserStatus:   userMessageToSpecialist,
+			},
+		)
 
 	}
 

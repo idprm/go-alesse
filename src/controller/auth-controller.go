@@ -2,7 +2,6 @@ package controller
 
 import (
 	"log"
-	"strings"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -156,14 +155,17 @@ func LoginHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	var confNotifOTP model.Config
-	database.Datasource.DB().Where("name", "NOTIF_OTP_USER").First(&confNotifOTP)
-	replaceMessageNotifOTP := strings.NewReplacer("@v1", otp)
-	contentNotifOTP := replaceMessageNotifOTP.Replace(confNotifOTP.Value)
+	const (
+		valOTPToUser = "OTP_TO_USER"
+	)
 
-	log.Println(contentNotifOTP)
+	var status model.Status
+	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
-	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, contentNotifOTP)
+	log.Println(notifMessageOTPToUser)
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -173,7 +175,7 @@ func LoginHandler(c *fiber.Ctx) error {
 	// insert to zenziva
 	database.Datasource.DB().Create(&model.Zenziva{
 		Msisdn:   user.Msisdn,
-		Action:   "OTP",
+		Action:   valOTPToUser,
 		Response: zenzivaOTP,
 	})
 

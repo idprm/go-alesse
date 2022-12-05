@@ -131,6 +131,7 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	// insert to transaction
 	database.Datasource.DB().Create(
 		&model.Transaction{
+			UserID:       chat.UserID,
 			ChatID:       chat.ID,
 			SystemStatus: status.ValueSystem,
 			NotifStatus:  notifMessage,

@@ -64,6 +64,21 @@ func StatusMessageToUser(content string, homecare model.Homecare, officer model.
 	return content
 }
 
+func ContentMessageToDoctor(content string, order model.Order, url string) string {
+	// Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*
+	urlWeb := config.ViperEnv("APP_HOST") + "/chat/" + url
+	replacer := strings.NewReplacer("@doctor", order.Doctor.Name, "@patient", order.User.Name, "@link", urlWeb)
+	content = replacer.Replace(content)
+	return content
+}
+
+func StatusMessageToDoctor(content string, order model.Order) string {
+	// Pasien @patient mengajukan Konsultasi Dokter @doctor
+	replacer := strings.NewReplacer("@patient", order.User.Name, "@doctor", order.Doctor.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
 func ContentMessageToSpecialist(content string, specialist model.Specialist, doctor model.Doctor, url string) string {
 	// Hi *@specialist*, Dokter Umum *@doctor* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat @link
 	urlWeb := config.ViperEnv("APP_HOST") + "/specialist/chat/" + url
@@ -197,6 +212,13 @@ func StatusHomecareToPatientDone(content string, homecare model.Homecare) string
 
 func ContentHomecareToHealthoffice(content string, homecare model.Homecare) string {
 	// Hello Admin Dinkes, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient
+	replacer := strings.NewReplacer("@health_center", homecare.Chat.Healthcenter.Name, "@patient", homecare.Chat.User.Name)
+	content = replacer.Replace(content)
+	return content
+}
+
+func StatusHomecareToHealthoffice(content string, homecare model.Homecare) string {
+	// Aktivitas Homecare Puskesmas @health_center untuk pasien @patient telah selesai
 	replacer := strings.NewReplacer("@health_center", homecare.Chat.Healthcenter.Name, "@patient", homecare.Chat.User.Name)
 	content = replacer.Replace(content)
 	return content

@@ -256,11 +256,13 @@ func SaveHomecare(c *fiber.Ctx) error {
 		// insert to transaction
 		database.Datasource.DB().Create(
 			&[]model.Transaction{{
+				UserID:       hc.Chat.UserID,
 				ChatID:       hc.ChatID,
 				SystemStatus: statusDoctorToHomecare.ValueSystem,
 				NotifStatus:  notifMessageDoctorToHomecare,
 				UserStatus:   userMessageDoctorToHomecare,
 			}, {
+				UserID:       hc.Chat.UserID,
 				ChatID:       hc.ChatID,
 				SystemStatus: statusDoctorToHomecare.ValueSystem,
 				NotifStatus:  notifMessageToUser,
@@ -385,6 +387,7 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	// insert to transaction
 	database.Datasource.DB().Create(
 		&model.Transaction{
+			UserID:       hc.Chat.UserID,
 			ChatID:       hc.ChatID,
 			SystemStatus: status.ValueSystem,
 			NotifStatus:  notifMessageHomecareToPatientProgress,
@@ -470,8 +473,10 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	var statusHomecareToHealthOffice model.Status
 	database.Datasource.DB().Where("name", valHomecareToHealthOffice).First(&statusHomecareToHealthOffice)
 	notifMessageHomecareToHealthOffice := util.ContentHomecareToHealthoffice(statusHomecareToHealthOffice.ValueNotif, hc)
+	userMessageHomecareToHealthOffice := util.StatusHomecareToHealthoffice(statusHomecareToHealthOffice.ValueUser, hc)
 
 	log.Println(notifMessageHomecareToHealthOffice)
+	log.Println(userMessageHomecareToHealthOffice)
 
 	zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientDone)
 	if err != nil {
@@ -505,15 +510,17 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	// insert to transaction
 	database.Datasource.DB().Create(
 		&[]model.Transaction{{
+			UserID:       hc.Chat.UserID,
 			ChatID:       hc.ChatID,
 			SystemStatus: statusHomecareToPatientDone.ValueSystem,
 			NotifStatus:  notifMessageHomecareToPatientDone,
 			UserStatus:   userMessageHomecareToPatientDone,
 		}, {
+			UserID:       hc.Chat.UserID,
 			ChatID:       hc.ChatID,
 			SystemStatus: statusHomecareToHealthOffice.ValueSystem,
 			NotifStatus:  notifMessageHomecareToHealthOffice,
-			UserStatus:   "",
+			UserStatus:   userMessageHomecareToHealthOffice,
 		}},
 	)
 
