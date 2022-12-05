@@ -191,14 +191,15 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 
 	if name != "" && url != "" {
 		// insert to chat
-		database.Datasource.DB().Create(&model.Chat{
+		chat := model.Chat{
 			HealthcenterID: order.HealthcenterID,
 			OrderID:        order.ID,
 			DoctorID:       order.Doctor.ID,
 			UserID:         order.User.ID,
 			ChannelName:    name,
 			ChannelUrl:     url,
-		})
+		}
+		database.Datasource.DB().Create(&chat)
 
 		const (
 			valMessageToDoctor = "MESSAGE_TO_DOCTOR"
@@ -238,7 +239,16 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 			Response: autoMessageDoctor,
 		})
 
-		// insert transaction
+		// insert to transaction
+		database.Datasource.DB().Create(
+			&model.Transaction{
+				UserID:       chat.UserID,
+				ChatID:       chat.ID,
+				SystemStatus: status.ValueSystem,
+				NotifStatus:  notifMessage,
+				UserStatus:   userMessage,
+			},
+		)
 
 	}
 
