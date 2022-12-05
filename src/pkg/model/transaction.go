@@ -11,5 +11,5 @@ type Transaction struct {
 	SystemStatus string `gorm:"type:text" json:"system_status"`
 	UserStatus   string `gorm:"type:text" json:"user_status"`
 	NotifStatus  string `gorm:"type:text" json:"notif_status"`
-	gorm.Model   `json:"-"`
+	gorm.Model
 }
