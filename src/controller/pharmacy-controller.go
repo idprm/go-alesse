@@ -178,6 +178,8 @@ func SavePharmacy(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Println(req.DiseaseID)
+
 	var pharmacy model.Pharmacy
 	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&pharmacy)
 
