@@ -64,17 +64,17 @@ func StatusMessageToUser(content string, homecare model.Homecare, officer model.
 	return content
 }
 
-func ContentMessageToDoctor(content string, order model.Order, url string) string {
+func ContentMessageToDoctor(content string, user model.User, doctor model.Doctor, url string) string {
 	// Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*
 	urlWeb := config.ViperEnv("APP_HOST") + "/chat/" + url
-	replacer := strings.NewReplacer("@doctor", order.Doctor.Name, "@patient", order.User.Name, "@link", urlWeb)
+	replacer := strings.NewReplacer("@doctor", doctor.Name, "@patient", user.Name, "@link", urlWeb)
 	content = replacer.Replace(content)
 	return content
 }
 
-func StatusMessageToDoctor(content string, order model.Order) string {
+func StatusMessageToDoctor(content string, user model.User, doctor model.Doctor) string {
 	// Pasien @patient mengajukan Konsultasi Dokter @doctor
-	replacer := strings.NewReplacer("@patient", order.User.Name, "@doctor", order.Doctor.Name)
+	replacer := strings.NewReplacer("@patient", user.Name, "@doctor", doctor.Name)
 	content = replacer.Replace(content)
 	return content
 }

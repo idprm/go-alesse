@@ -56,18 +56,19 @@ func OrderChat(c *fiber.Ctx) error {
 	/**
 	 * INSERT TO ORDER
 	 */
-	database.Datasource.DB().Create(&model.Order{
+	order := model.Order{
 		HealthcenterID: user.Healthcenter.ID,
 		UserID:         user.ID,
 		DoctorID:       doctor.ID,
 		Number:         "ORD-" + util.TimeStamp(),
 		Total:          0,
-	})
+	}
+	database.Datasource.DB().Create(&order)
 
 	/**
 	 * SENDBIRD PROCESS
 	 */
-	err = sendbirdProcess(user.Healthcenter.ID, user.ID, doctor.ID)
+	err = sendbirdProcess(order.ID, user.Healthcenter.ID, user.ID, doctor.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -84,19 +85,26 @@ func OrderChat(c *fiber.Ctx) error {
 	})
 }
 
-func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
+func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint) error {
 
-	var order model.Order
-	database.Datasource.DB().
-		Where("healthcenter_id", healthcenterId).
-		Where("user_id", userId).
-		Where("doctor_id", doctorId).
-		Preload("Healthcenter").Preload("User").Preload("Doctor").
-		First(&order)
+	// var order model.Order
+	// database.Datasource.DB().
+	// 	Where("healthcenter_id", healthcenterId).
+	// 	Where("user_id", userId).
+	// 	Where("doctor_id", doctorId).
+	// 	Preload("Healthcenter").Preload("User").Preload("Doctor").
+	// 	First(&order)
+
+	var user model.User
+	database.Datasource.DB().Where("id", userId).First(&user)
+
+	var doctor model.Doctor
+	database.Datasource.DB().Where("id", doctorId).First(&doctor)
+
 	/**
 	 * Check User Sendbird
 	 */
-	getUser, isUser, err := handler.SendbirdGetUser(order.User)
+	getUser, isUser, err := handler.SendbirdGetUser(user)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -105,7 +113,7 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 	 * Add User Sendbird
 	 */
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   order.User.Msisdn,
+		Msisdn:   user.Msisdn,
 		Action:   actionCheckUser,
 		Response: getUser,
 	})
@@ -113,20 +121,20 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 	if isUser == true {
 
 		// create user sendbird
-		createUser, err := handler.SendbirdCreateUser(order.User)
+		createUser, err := handler.SendbirdCreateUser(user)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 		// insert to sendbird
 		database.Datasource.DB().Create(&model.Sendbird{
-			Msisdn:   order.User.Msisdn,
+			Msisdn:   user.Msisdn,
 			Action:   actionCreateUser,
 			Response: createUser,
 		})
 	}
 
 	var chat model.Chat
-	resultChat := database.Datasource.DB().Where("user_id", order.User.ID).First(&chat)
+	resultChat := database.Datasource.DB().Where("user_id", user.ID).First(&chat)
 
 	getChannel, isChannel, err := handler.SendbirdGetGroupChannel(chat)
 	if err != nil {
@@ -135,7 +143,7 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   order.User.Msisdn,
+		Msisdn:   user.Msisdn,
 		Action:   actionCheckGroup,
 		Response: getChannel,
 	})
@@ -150,10 +158,10 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 				return errors.New(err.Error())
 			}
 			// delete chat
-			database.Datasource.DB().Where("user_id", order.User.ID).Delete(&chat)
+			database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
 			// insert to sendbirds
 			database.Datasource.DB().Create(&model.Sendbird{
-				Msisdn:   order.User.Msisdn,
+				Msisdn:   user.Msisdn,
 				Action:   actionDeleteGroup,
 				Response: deleteGroupChannel,
 			})
@@ -161,13 +169,13 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 	}
 
 	// create group
-	createGroup, name, url, err := handler.SendbirdCreateGroupChannel(order.Doctor, order.User)
+	createGroup, name, url, err := handler.SendbirdCreateGroupChannel(doctor, user)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
-		Msisdn:   order.User.Msisdn,
+		Msisdn:   user.Msisdn,
 		Action:   actionCreateGroup,
 		Response: createGroup,
 	})
@@ -175,10 +183,10 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 	if name != "" && url != "" {
 		// insert to chat
 		chat := model.Chat{
-			HealthcenterID: order.HealthcenterID,
-			OrderID:        order.ID,
-			DoctorID:       order.Doctor.ID,
-			UserID:         order.User.ID,
+			HealthcenterID: healthcenterId,
+			OrderID:        orderId,
+			DoctorID:       doctorId,
+			UserID:         userId,
 			ChannelName:    name,
 			ChannelUrl:     url,
 		}
@@ -191,33 +199,33 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 		var status model.Status
 		database.Datasource.DB().Where("name", valMessageToDoctor).First(&status)
 
-		notifMessage := util.ContentMessageToDoctor(status.ValueNotif, order, url)
-		userMessage := util.StatusMessageToDoctor(status.ValueUser, order)
+		notifMessage := util.ContentMessageToDoctor(status.ValueNotif, user, doctor, url)
+		userMessage := util.StatusMessageToDoctor(status.ValueUser, user, doctor)
 
 		log.Println(notifMessage)
 		log.Println(userMessage)
 
 		// NOTIF MESSAGE TO DOCTOR
-		zenzifaNotif, err := handler.ZenzivaSendSMS(order.Doctor.Phone, notifMessage)
+		zenzifaNotif, err := handler.ZenzivaSendSMS(doctor.Phone, notifMessage)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 		// insert to zenziva
 		database.Datasource.DB().Create(&model.Zenziva{
-			Msisdn:   order.Doctor.Phone,
+			Msisdn:   doctor.Phone,
 			Action:   actionCreateNotif,
 			Response: zenzifaNotif,
 		})
 
 		// auto message to user
-		autoMessageDoctor, err := handler.SendbirdAutoMessageDoctor(url, order.Doctor, order.User)
+		autoMessageDoctor, err := handler.SendbirdAutoMessageDoctor(url, doctor, user)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 
 		// insert to sendbird
 		database.Datasource.DB().Create(&model.Sendbird{
-			Msisdn:   order.User.Msisdn,
+			Msisdn:   user.Msisdn,
 			Action:   actionCreateMessage,
 			Response: autoMessageDoctor,
 		})
