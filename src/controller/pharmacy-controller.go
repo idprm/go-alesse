@@ -212,6 +212,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 
 	} else {
 		pharmacy.Weight = req.Weight
+		pharmacy.DiseaseID = req.DiseaseID
 		pharmacy.PainComplaints = req.PainComplaints
 		pharmacy.Diagnosis = req.Diagnosis
 		pharmacy.AllergyMedicine = req.AllergyMedicine
