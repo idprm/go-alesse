@@ -21,7 +21,8 @@ type PharmacyRequest struct {
 	ChatID          uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
 	Weight          uint32                    `query:"weight" validate:"required" json:"weight"`
 	PainComplaints  string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
-	Diagnosis       string                    `query:"diagnosis" validate:"required" json:"diagnosis"`
+	DiseaseID       uint                      `query:"disease_id" validate:"required" json:"disease_id"`
+	Diagnosis       string                    `query:"diagnosis" json:"diagnosis"`
 	AllergyMedicine string                    `query:"allergy_medicine" validate:"required" json:"allergy_medicine"`
 	Slug            string                    `query:"slug" json:"slug"`
 	Data            []PharmacyMedicineRequest `query:"data" json:"data"`
@@ -185,6 +186,7 @@ func SavePharmacy(c *fiber.Ctx) error {
 			ChatID:          req.ChatID,
 			Weight:          req.Weight,
 			PainComplaints:  req.PainComplaints,
+			DiseaseID:       req.DiseaseID,
 			Diagnosis:       req.Diagnosis,
 			AllergyMedicine: req.AllergyMedicine,
 			Slug:            req.Slug,
@@ -232,6 +234,19 @@ func SavePharmacy(c *fiber.Ctx) error {
 			})
 		}
 
+	}
+
+	// insert or update chat disease
+	var chatdisease model.ChatDisease
+	checkChat := database.Datasource.DB().Where("chat_id", req.ChatID).First(&chatdisease)
+	if checkChat.RowsAffected == 0 {
+		database.Datasource.DB().Create(&model.ChatDisease{
+			ChatID:    req.ChatID,
+			DiseaseID: req.DiseaseID,
+		})
+	} else {
+		chatdisease.DiseaseID = req.DiseaseID
+		database.Datasource.DB().Save(&chatdisease)
 	}
 
 	/**

@@ -13,6 +13,8 @@ type Pharmacy struct {
 	Number          string    `gorm:"size:25" json:"number"`
 	Weight          uint32    `gorm:"size:5" json:"weight"`
 	PainComplaints  string    `gorm:"type:text" json:"pain_complaints"`
+	DiseaseID       uint      `json:"disease_id"`
+	Disease         Disease   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Diagnosis       string    `gorm:"type:text" json:"diagnosis"`
 	AllergyMedicine string    `gorm:"type:text" json:"allergy_medicine"`
 	Slug            string    `gorm:"size:200;unique" json:"slug"`
