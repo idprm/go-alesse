@@ -96,6 +96,19 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		database.Datasource.DB().Save(&medicalresume)
 	}
 
+	// insert or update chat disease
+	var chatdisease model.ChatDisease
+	checkChat := database.Datasource.DB().Where("chat_id", req.ChatID).First(&chatdisease)
+	if checkChat.RowsAffected == 0 {
+		database.Datasource.DB().Create(&model.ChatDisease{
+			ChatID:    req.ChatID,
+			DiseaseID: req.DiseaseID,
+		})
+	} else {
+		chatdisease.DiseaseID = req.DiseaseID
+		database.Datasource.DB().Save(&chatdisease)
+	}
+
 	const (
 		valFeedbackToPatient = "FEEDBACK_TO_PATIENT"
 	)

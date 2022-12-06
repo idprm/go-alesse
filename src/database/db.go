@@ -103,6 +103,7 @@ func Connect() {
 		&model.Zenziva{},
 		&model.Status{},
 		&model.Transaction{},
+		&model.ChatDisease{},
 	)
 
 	// TODO: Add seeders
