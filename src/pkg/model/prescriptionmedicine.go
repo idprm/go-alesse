@@ -5,9 +5,9 @@ type PrescriptionMedicine struct {
 	Prescription   Prescription
 	MedicineID     uint64 `json:"medicine_id"`
 	Medicine       Medicine
-	Name           string `gorm:"size:55" json:"name"`
-	Quantity       uint   `gorm:"size:8" json:"quantity"`
-	Dose           string `gorm:"size:15" json:"dose"`
-	Rule           string `gorm:"size:55" json:"rule"`
+	Name           string `gorm:"size:250" json:"name"`
+	Quantity       uint   `gorm:"size:9" json:"quantity"`
+	Dose           string `gorm:"size:250" json:"dose"`
+	Rule           string `gorm:"size:250" json:"rule"`
 	Description    string `gorm:"type:text" json:"description"`
 }
