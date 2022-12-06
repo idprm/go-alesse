@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"log"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
@@ -107,7 +106,6 @@ func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
 		Where("healthcenter_id", healthcenterId).
 		Where("user_id", userId).
 		Where("doctor_id", doctorId).
-		Where("DATE(created_at) = DATE(?)", time.Now()).
 		Preload("Healthcenter").Preload("User").Preload("Doctor").
 		First(&order)
 	/**
