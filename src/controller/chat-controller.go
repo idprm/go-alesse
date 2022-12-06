@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/handler"
@@ -83,7 +85,9 @@ func ChatLeave(c *fiber.Ctx) error {
 	})
 
 	if isLeave == true {
-		//
+		chat.IsLeave = false
+		chat.LeaveAt = time.Now()
+		database.Datasource.DB().Save(&chat)
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"error": false, "message": "Leaved"})
 }

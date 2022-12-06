@@ -50,53 +50,38 @@ func OrderChat(c *fiber.Ctx) error {
 	/**
 	 * Check Order
 	 */
-	var order model.Order
-	resultOrder := database.Datasource.DB().
-		Where("healthcenter_id", user.HealthcenterID).
-		Where("user_id", user.ID).
-		Where("doctor_id", doctor.ID).
-		First(&order)
 
 	finishUrl := config.ViperEnv("APP_HOST") + "/chat"
 
-	if resultOrder.RowsAffected == 0 {
-		/**
-		 * INSERT TO ORDER
-		 */
-		database.Datasource.DB().Create(&model.Order{
-			HealthcenterID: user.Healthcenter.ID,
-			UserID:         user.ID,
-			DoctorID:       doctor.ID,
-			Number:         "ORD-" + util.TimeStamp(),
-			Total:          0,
-		})
+	/**
+	 * INSERT TO ORDER
+	 */
+	database.Datasource.DB().Create(&model.Order{
+		HealthcenterID: user.Healthcenter.ID,
+		UserID:         user.ID,
+		DoctorID:       doctor.ID,
+		Number:         "ORD-" + util.TimeStamp(),
+		Total:          0,
+	})
 
-		/**
-		 * SENDBIRD PROCESS
-		 */
-		err := sendbirdProcess(user.Healthcenter.ID, user.ID, doctor.ID)
-		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-				"error":   true,
-				"message": err.Error(),
-				"status":  fiber.StatusBadGateway,
-			})
-		}
-
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"error":        false,
-			"message":      "Created Successfull",
-			"redirect_url": finishUrl,
-			"status":       fiber.StatusCreated,
-		})
-	} else {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"error":        false,
-			"message":      "Already chat",
-			"redirect_url": finishUrl,
-			"status":       fiber.StatusOK,
+	/**
+	 * SENDBIRD PROCESS
+	 */
+	err = sendbirdProcess(user.Healthcenter.ID, user.ID, doctor.ID)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+			"status":  fiber.StatusBadGateway,
 		})
 	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"error":        false,
+		"message":      "Created Successfull",
+		"redirect_url": finishUrl,
+		"status":       fiber.StatusCreated,
+	})
 }
 
 func sendbirdProcess(healthcenterId uint, userId uint64, doctorId uint) error {
