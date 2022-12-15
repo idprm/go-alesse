@@ -90,24 +90,63 @@ var configs = []model.Config{
 	},
 }
 
+var roles = []model.Role{
+	{
+		Name: "Pasien",
+	},
+	{
+		Name: "Dokter Umum",
+	},
+	{
+		Name: "Dokter Spesialis",
+	},
+	{
+		Name: "Perawat",
+	},
+	{
+		Name: "Farmasi",
+	},
+	{
+		Name: "Kurir",
+	},
+}
+
+var categories = []model.Category{
+	{
+		Code:     "chat",
+		Name:     "Chat",
+		IsActive: true,
+	},
+	{
+		Code:     "pharmacy",
+		Name:     "e-Resep",
+		IsActive: true,
+	},
+	{
+		Code:     "homecare",
+		Name:     "Homecare",
+		IsActive: true,
+	},
+}
+
 var statuses = []model.Status{
 	{
 		Name:        "OTP_TO_USER",
 		ValueSystem: "Kirim kode OTP",
 		ValueUser:   "Mengirim kode OTP @otp kepada pasien @patient",
-		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link",
+		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "MESSAGE_TO_DOCTOR",
 		ValueSystem: "Request chat",
 		ValueUser:   "Pasien @patient mengajukan Konsultasi Dokter @doctor",
-		ValueNotif:  "Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
+		ValueNotif:  "Hi *@doctor*, User *@patient* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "MESSAGE_TO_SPECIALIST",
 		ValueSystem: "Request chat specialist",
 		ValueUser:   "Dokter umum @doctor mengajukan Konsultasi dengan Dokter spesialis @specialist",
-		ValueNotif:  "Hi *@specialist*, Dokter Umum *@doctor* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*",
+		ValueNotif:  "Hi *@specialist*, Dokter Umum *@doctor* menunggu konfirmasi untuk konsultasi online. Klik disini untuk memulai chat *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "MESSAGE_TO_USER",
@@ -119,13 +158,13 @@ var statuses = []model.Status{
 		Name:        "DOCTOR_TO_PHARMACY",
 		ValueSystem: "Request e-Resep",
 		ValueUser:   "Dokter @doctor meresepkan e-Resep @number",
-		ValueNotif:  "Hello Admin Farmasi *@health_center* terdapat pengajuan resep obat dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
+		ValueNotif:  "Hello Admin Farmasi *@health_center* terdapat pengajuan resep obat dari *@doctor* untuk pasien *@patient* Cek disini *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "PHARMACY_TO_COURIER",
 		ValueSystem: "Request kurir",
 		ValueUser:   "e-Resep @number telah dibuat. Menunggu Kurir @courier untuk mengambil obat.",
-		ValueNotif:  "Hello Kurir *@courier*, terdapat pemintaan pengantaran obat dari Farmasi *@pharmacy* untuk pasien *@patient*. Cek disini *@link*",
+		ValueNotif:  "Hello Kurir *@courier*, terdapat pemintaan pengantaran obat dari Farmasi *@pharmacy* untuk pasien *@patient*. Cek disini *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "COURIER_TO_PHARMACY",
@@ -155,7 +194,7 @@ var statuses = []model.Status{
 		Name:        "HOMECARE_TO_PATIENT_DONE",
 		ValueSystem: "Pasien telah dikunjungi",
 		ValueUser:   "Tim Homecare Puskesmas @health_center telah mengunjungi dan memeriksa Pasien @patient.",
-		ValueNotif:  "Hello pasien *@patient*, layanan homecare dari tim Homecare *@health_center* sudah selesai dilakukan. Semoga Anda lekas sembuh. *@link*",
+		ValueNotif:  "Hello pasien *@patient*, layanan homecare dari tim Homecare *@health_center* sudah selesai dilakukan. Semoga Anda lekas sembuh. *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "HOMECARE_TO_HEALTHOFFICE",
@@ -167,13 +206,13 @@ var statuses = []model.Status{
 		Name:        "DOCTOR_TO_HOMECARE",
 		ValueSystem: "Request homecare",
 		ValueUser:   "Dokter @doctor mengajukan Layanan Homecare untuk Pasien @patient",
-		ValueNotif:  "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*",
+		ValueNotif:  "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "FEEDBACK_TO_PATIENT",
 		ValueSystem: "Feedback user",
 		ValueUser:   "Mengirim link feedback kepada pasien @patient",
-		ValueNotif:  "Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? *@link*",
+		ValueNotif:  "Hello pasien *@patient*, Semoga Anda lekas sembuh. Seberapa puaskah Anda dengan layanan puskesmas *@health_center* ? Klik Link ini untuk feedback *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "CHAT_PROGRESS",

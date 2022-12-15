@@ -69,6 +69,8 @@ func Connect() {
 
 	db.AutoMigrate(
 		&model.Config{},
+		&model.Role{},
+		&model.Category{},
 		&model.Healthcenter{},
 		&model.SuperAdmin{},
 		&model.Admin{},
@@ -103,11 +105,14 @@ func Connect() {
 		&model.Zenziva{},
 		&model.Status{},
 		&model.Transaction{},
+		&model.ChatCategory{},
 		&model.ChatDisease{},
 	)
 
 	// TODO: Add seeders
 	var config []model.Config
+	var role []model.Role
+	var category []model.Category
 	var healthcenter []model.Healthcenter
 	var medicine []model.Medicine
 	var doctor []model.Doctor
@@ -121,6 +126,8 @@ func Connect() {
 	var status []model.Status
 
 	resultConfig := db.Find(&config)
+	resultRole := db.Find(&role)
+	resultCategory := db.Find(&category)
 	resultHealthCenter := db.Find(&healthcenter)
 	resultMedicine := db.Find(&medicine)
 	resultDoctor := db.Find(&doctor)
@@ -136,6 +143,18 @@ func Connect() {
 	if resultConfig.RowsAffected == 0 {
 		for i, _ := range configs {
 			db.Model(&model.Config{}).Create(&configs[i])
+		}
+	}
+
+	if resultRole.RowsAffected == 0 {
+		for i, _ := range roles {
+			db.Model(&model.Role{}).Create(&roles[i])
+		}
+	}
+
+	if resultCategory.RowsAffected == 0 {
+		for i, _ := range categories {
+			db.Model(&model.Category{}).Create(&categories[i])
 		}
 	}
 
