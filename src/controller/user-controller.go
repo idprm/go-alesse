@@ -17,6 +17,6 @@ func GetTransactionByUser(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("msisdn", c.Params("msisdn")).Where("is_active", true).First(&user)
 
 	var transactions []model.Transaction
-	database.Datasource.DB().Where("user_id", user.ID).Order("created_at DESC").Find(&transactions)
+	database.Datasource.DB().Where("user_id", user.ID).Order("created_at DESC").Limit(15).Find(&transactions)
 	return c.Status(fiber.StatusOK).JSON(&transactions)
 }
