@@ -170,6 +170,10 @@ func SaveHomecare(c *fiber.Ctx) error {
 	var homecare model.Homecare
 	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").First(&homecare)
 
+	// category
+	var category model.Category
+	database.Datasource.DB().Where("code", "homecare").First(&category)
+
 	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
 
 	if isExist.RowsAffected == 0 {
@@ -282,6 +286,21 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Description: v.Description,
 			})
 		}
+	}
+
+	var chatCategory model.ChatCategory
+	isExistCategory := database.Datasource.DB().Where("chat_id", req.ChatID).First(&chatCategory)
+
+	if isExistCategory.RowsAffected == 0 {
+		database.Datasource.DB().Create(
+			&model.ChatCategory{
+				ChatID:     req.ChatID,
+				CategoryID: category.ID,
+			})
+	} else {
+		chatCategory.ChatID = req.ChatID
+		chatCategory.CategoryID = category.ID
+		database.Datasource.DB().Save(&chatCategory)
 	}
 
 	// chat closed

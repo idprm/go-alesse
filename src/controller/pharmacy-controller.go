@@ -178,7 +178,9 @@ func SavePharmacy(c *fiber.Ctx) error {
 		})
 	}
 
-	log.Println(req.DiseaseID)
+	// category
+	var category model.Category
+	database.Datasource.DB().Where("code", "pharmacy").First(&category)
 
 	var pharmacy model.Pharmacy
 	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).First(&pharmacy)
@@ -320,6 +322,20 @@ func SavePharmacy(c *fiber.Ctx) error {
 			UserStatus:   userMessagePharmacyToPatient,
 		}},
 	)
+
+	var chatCategory model.ChatCategory
+	isExistCategory := database.Datasource.DB().Where("chat_id", req.ChatID).First(&chatCategory)
+	if isExistCategory.RowsAffected == 0 {
+		database.Datasource.DB().Create(
+			&model.ChatCategory{
+				ChatID:     req.ChatID,
+				CategoryID: category.ID,
+			})
+	} else {
+		chatCategory.ChatID = req.ChatID
+		chatCategory.CategoryID = category.ID
+		database.Datasource.DB().Save(&chatCategory)
+	}
 
 	// chat closed
 	var ch model.Chat

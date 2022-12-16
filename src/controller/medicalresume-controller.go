@@ -71,6 +71,10 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		})
 	}
 
+	// category
+	var category model.Category
+	database.Datasource.DB().Where("code", "chat").First(&category)
+
 	var medicalresume model.MedicalResume
 	existResume := database.Datasource.DB().Where("chat_id", req.ChatID).First(&medicalresume)
 	if existResume.RowsAffected == 0 {
@@ -152,6 +156,20 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 			UserStatus:   userMessage,
 		},
 	)
+
+	var chatCategory model.ChatCategory
+	isExistCategory := database.Datasource.DB().Where("chat_id", req.ChatID).First(&chatCategory)
+	if isExistCategory.RowsAffected == 0 {
+		database.Datasource.DB().Create(
+			&model.ChatCategory{
+				ChatID:     req.ChatID,
+				CategoryID: category.ID,
+			})
+	} else {
+		chatCategory.ChatID = req.ChatID
+		chatCategory.CategoryID = category.ID
+		database.Datasource.DB().Save(&chatCategory)
+	}
 
 	// chat closed
 	var ch model.Chat
