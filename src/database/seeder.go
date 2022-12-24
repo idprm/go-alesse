@@ -138,7 +138,7 @@ var statuses = []model.Status{
 		Name:        "OTP_TO_USER",
 		ValueSystem: "Kirim kode OTP",
 		ValueUser:   "Mengirim kode OTP @otp kepada pasien @patient",
-		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link, Simpan Nomor ke Kontak agar link bisa di Klik",
+		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link/auth/verify, Simpan Nomor ke Kontak agar link bisa di Klik",
 	},
 	{
 		Name:        "OTP_TO_ADMIN",
