@@ -971,7 +971,7 @@ func MAuthSpecialistHandler(c *fiber.Ctx) error {
 	}
 
 	var spec model.Specialist
-	database.Datasource.DB().Where("phone", req.Msisdn).Preload("Healthcenter").First(&spec)
+	database.Datasource.DB().Where("phone", req.Msisdn).First(&spec)
 	spec.IpAddress = req.IpAddress
 	spec.LoginAt = time.Now()
 	database.Datasource.DB().Save(&spec)
