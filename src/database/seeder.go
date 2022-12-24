@@ -25,7 +25,11 @@ var configs = []model.Config{
 	},
 	{
 		Name:  "NOTIF_OTP_USER",
-		Value: "Berikut adalah kode OTP kamu : *@v1* untuk mulai konsultasi dokter di a-lesse.com",
+		Value: "Berikut adalah kode OTP kamu : *@v1* untuk mulai konsultasi dokter di dottoro-ta.com",
+	},
+	{
+		Name:  "NOTIF_OTP_ADMIN",
+		Value: "Berikut adalah kode OTP kamu : *@v1*",
 	},
 	{
 		Name:  "PRICE",
@@ -135,6 +139,12 @@ var statuses = []model.Status{
 		ValueSystem: "Kirim kode OTP",
 		ValueUser:   "Mengirim kode OTP @otp kepada pasien @patient",
 		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp* untuk mulai konsultasi dokter di @link, Simpan Nomor ke Kontak agar link bisa di Klik",
+	},
+	{
+		Name:        "OTP_TO_ADMIN",
+		ValueSystem: "Kirim kode OTP",
+		ValueUser:   "Mengirim kode OTP @otp",
+		ValueNotif:  "Berikut adalah kode OTP kamu : *@otp*",
 	},
 	{
 		Name:        "MESSAGE_TO_DOCTOR",

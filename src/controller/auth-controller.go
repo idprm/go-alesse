@@ -46,6 +46,11 @@ type ErrorResponse struct {
 
 var validate = validator.New()
 
+const (
+	valOTPToUser  = "OTP_TO_USER"
+	valOTPToAdmin = "OTP_TO_ADMIN"
+)
+
 func ValidateLogin(req LoginRequest) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := validate.Struct(req)
@@ -155,10 +160,6 @@ func LoginHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
 	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
@@ -255,10 +256,6 @@ func RegisterHandler(c *fiber.Ctx) error {
 				Otp:      otp,
 				IsVerify: false,
 			},
-		)
-
-		const (
-			valOTPToUser = "OTP_TO_USER"
 		)
 
 		var status model.Status
@@ -402,10 +399,6 @@ func MLoginHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
 	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
@@ -502,10 +495,6 @@ func MRegisterHandler(c *fiber.Ctx) error {
 				Otp:      otp,
 				IsVerify: false,
 			},
-		)
-
-		const (
-			valOTPToUser = "OTP_TO_USER"
 		)
 
 		var status model.Status
@@ -648,12 +637,8 @@ func MAuthDoctorHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
-	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	database.Datasource.DB().Where("name", valOTPToAdmin).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
 	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
@@ -733,12 +718,8 @@ func MAuthOfficerHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
-	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	database.Datasource.DB().Where("name", valOTPToAdmin).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
 	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
@@ -820,12 +801,8 @@ func MAuthApothecaryHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
-	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	database.Datasource.DB().Where("name", valOTPToAdmin).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
 	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
@@ -907,12 +884,8 @@ func MAuthCourierHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
-	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	database.Datasource.DB().Where("name", valOTPToAdmin).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
 	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
@@ -994,12 +967,8 @@ func MAuthSpecialistHandler(c *fiber.Ctx) error {
 		},
 	)
 
-	const (
-		valOTPToUser = "OTP_TO_USER"
-	)
-
 	var status model.Status
-	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	database.Datasource.DB().Where("name", valOTPToAdmin).First(&status)
 	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
 
 	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
