@@ -122,5 +122,10 @@ func Setup(app *fiber.App) {
 	auth2.Post("login", controller.MLoginHandler)
 	auth2.Post("register", controller.MRegisterHandler)
 	auth2.Post("verify", controller.MVerifyHandler)
+
 	auth2.Post("doctor", controller.MAuthDoctorHandler)
+	auth2.Post("officer", controller.MAuthOfficerHandler)
+	auth2.Post("apothecary", controller.MAuthApothecaryHandler)
+	auth2.Post("courier", controller.MAuthCourierHandler)
+	auth2.Post("specialist", controller.MAuthSpecialistHandler)
 }

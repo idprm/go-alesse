@@ -16,5 +16,7 @@ type Specialist struct {
 	Phone                string    `gorm:"size:15;unique" json:"phone"`
 	Start                time.Time `gorm:"type:time" json:"start"`
 	End                  time.Time `gorm:"type:time" json:"end"`
+	LoginAt              time.Time `gorm:"default:null" json:"-"`
+	IpAddress            string    `gorm:"size:25" json:"ip_address"`
 	IsActive             bool      `gorm:"type:bool" json:"is_active"`
 }

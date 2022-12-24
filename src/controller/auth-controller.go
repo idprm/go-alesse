@@ -672,10 +672,356 @@ func MAuthDoctorHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(
 		fiber.Map{
-			"error":  false,
-			"token":  token,
-			"exp":    exp,
-			"doctor": dtr,
+			"error": false,
+			"token": token,
+			"exp":   exp,
+			"data":  dtr,
+		},
+	)
+}
+
+func MAuthOfficerHandler(c *fiber.Ctx) error {
+	req := new(LoginRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	errors := ValidateLogin(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var officer model.Officer
+	isExist := database.Datasource.DB().Where("phone", req.Msisdn).Find(&officer)
+
+	if isExist.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   true,
+			"message": "Not found",
+		})
+	}
+
+	var ofcr model.Officer
+	database.Datasource.DB().Where("phone", req.Msisdn).Preload("Healthcenter").First(&ofcr)
+	ofcr.IpAddress = req.IpAddress
+	ofcr.LoginAt = time.Now()
+	database.Datasource.DB().Save(&ofcr)
+	token, exp, err := middleware.GenerateJWTTokenOfficer(ofcr)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	otp, _ := util.GenerateOTP(4)
+
+	// insert to verify
+	database.Datasource.DB().Create(
+		&model.Verify{
+			Msisdn:   req.Msisdn,
+			Otp:      otp,
+			IsVerify: false,
+		},
+	)
+
+	const (
+		valOTPToUser = "OTP_TO_USER"
+	)
+
+	var status model.Status
+	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(&model.Zenziva{
+		Msisdn:   ofcr.Phone,
+		Action:   valOTPToUser,
+		Response: zenzivaOTP,
+	})
+
+	return c.Status(fiber.StatusOK).JSON(
+		fiber.Map{
+			"error": false,
+			"token": token,
+			"exp":   exp,
+			"data":  ofcr,
+		},
+	)
+}
+
+func MAuthApothecaryHandler(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	req := new(LoginRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	errors := ValidateLogin(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var apothecary model.Apothecary
+	isExist := database.Datasource.DB().Where("phone", req.Msisdn).Find(&apothecary)
+
+	if isExist.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   true,
+			"message": "Not found",
+		})
+	}
+
+	var apot model.Apothecary
+	database.Datasource.DB().Where("phone", req.Msisdn).Preload("Healthcenter").First(&apot)
+	apot.IpAddress = req.IpAddress
+	apot.LoginAt = time.Now()
+	database.Datasource.DB().Save(&apot)
+	token, exp, err := middleware.GenerateJWTTokenApothecary(apot)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	otp, _ := util.GenerateOTP(4)
+
+	// insert to verify
+	database.Datasource.DB().Create(
+		&model.Verify{
+			Msisdn:   req.Msisdn,
+			Otp:      otp,
+			IsVerify: false,
+		},
+	)
+
+	const (
+		valOTPToUser = "OTP_TO_USER"
+	)
+
+	var status model.Status
+	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(&model.Zenziva{
+		Msisdn:   apot.Phone,
+		Action:   valOTPToUser,
+		Response: zenzivaOTP,
+	})
+
+	return c.Status(fiber.StatusOK).JSON(
+		fiber.Map{
+			"error": false,
+			"token": token,
+			"exp":   exp,
+			"data":  apot,
+		},
+	)
+}
+
+func MAuthCourierHandler(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	req := new(LoginRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	errors := ValidateLogin(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var courier model.Courier
+	isExist := database.Datasource.DB().Where("phone", req.Msisdn).Find(&courier)
+
+	if isExist.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   true,
+			"message": "Not found",
+		})
+	}
+
+	var cour model.Courier
+	database.Datasource.DB().Where("phone", req.Msisdn).Preload("Healthcenter").First(&cour)
+	cour.IpAddress = req.IpAddress
+	cour.LoginAt = time.Now()
+	database.Datasource.DB().Save(&cour)
+	token, exp, err := middleware.GenerateJWTTokenCourier(cour)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	otp, _ := util.GenerateOTP(4)
+
+	// insert to verify
+	database.Datasource.DB().Create(
+		&model.Verify{
+			Msisdn:   req.Msisdn,
+			Otp:      otp,
+			IsVerify: false,
+		},
+	)
+
+	const (
+		valOTPToUser = "OTP_TO_USER"
+	)
+
+	var status model.Status
+	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(&model.Zenziva{
+		Msisdn:   cour.Phone,
+		Action:   valOTPToUser,
+		Response: zenzivaOTP,
+	})
+
+	return c.Status(fiber.StatusOK).JSON(
+		fiber.Map{
+			"error": false,
+			"token": token,
+			"exp":   exp,
+			"data":  cour,
+		},
+	)
+}
+
+func MAuthSpecialistHandler(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+
+	req := new(LoginRequest)
+
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	errors := ValidateLogin(*req)
+	if errors != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": errors,
+		})
+	}
+
+	var specialist model.Specialist
+	isExist := database.Datasource.DB().Where("phone", req.Msisdn).Find(&specialist)
+
+	if isExist.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   true,
+			"message": "Not found",
+		})
+	}
+
+	var spec model.Specialist
+	database.Datasource.DB().Where("phone", req.Msisdn).Preload("Healthcenter").First(&spec)
+	spec.IpAddress = req.IpAddress
+	spec.LoginAt = time.Now()
+	database.Datasource.DB().Save(&spec)
+	token, exp, err := middleware.GenerateJWTTokenSpecialist(spec)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	otp, _ := util.GenerateOTP(4)
+
+	// insert to verify
+	database.Datasource.DB().Create(
+		&model.Verify{
+			Msisdn:   req.Msisdn,
+			Otp:      otp,
+			IsVerify: false,
+		},
+	)
+
+	const (
+		valOTPToUser = "OTP_TO_USER"
+	)
+
+	var status model.Status
+	database.Datasource.DB().Where("name", valOTPToUser).First(&status)
+	notifMessageOTPToUser := util.ContentOTPToUser(status.ValueNotif, otp, config.ViperEnv("APP_HOST"))
+
+	zenzivaOTP, err := handler.ZenzivaSendSMS(req.Msisdn, notifMessageOTPToUser)
+	if err != nil {
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+	// insert to zenziva
+	database.Datasource.DB().Create(&model.Zenziva{
+		Msisdn:   spec.Phone,
+		Action:   valOTPToUser,
+		Response: zenzivaOTP,
+	})
+
+	return c.Status(fiber.StatusOK).JSON(
+		fiber.Map{
+			"error": false,
+			"token": token,
+			"exp":   exp,
+			"data":  spec,
 		},
 	)
 }
