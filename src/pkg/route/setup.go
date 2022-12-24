@@ -113,4 +113,14 @@ func Setup(app *fiber.App) {
 	authenticated.Post("orders", controller.OrderChat)
 	authenticated.Post("chat/user", controller.ChatUser)
 
+	/**
+	 * version 2 for mobile
+	 */
+	v2 := app.Group("v2")
+	auth2 := v2.Group("auth")
+
+	auth2.Post("login", controller.MLoginHandler)
+	auth2.Post("register", controller.MRegisterHandler)
+	auth2.Post("verify", controller.MVerifyHandler)
+	auth2.Post("doctor", controller.MAuthDoctorHandler)
 }
