@@ -17,8 +17,9 @@ type User struct {
 	Dob            time.Time    `gorm:"default:null" json:"dob"`
 	Gender         string       `gorm:"size:15" json:"gender"`
 	Address        string       `gorm:"type:text" json:"address"`
-	Latitude       string       `query:"latitude" json:"latitude"`
-	Longitude      string       `query:"longitude" json:"longitude"`
+	Latitude       string       `gorm:"latitude" json:"latitude"`
+	Longitude      string       `gorm:"longitude" json:"longitude"`
+	UrlGmap        string       `gorm:"type:text" json:"url_gmap"`
 	VerifyAt       time.Time    `gorm:"default:null" json:"-"`
 	LoginAt        time.Time    `gorm:"default:null" json:"-"`
 	ActiveAt       time.Time    `gorm:"default:null" json:"-"`

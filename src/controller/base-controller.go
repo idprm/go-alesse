@@ -14,13 +14,13 @@ func GetAllDisease(c *fiber.Ctx) error {
 
 func GetAllMedicine(c *fiber.Ctx) error {
 	var medicines []model.Medicine
-	database.Datasource.DB().Where("is_active", true).Where("name LIKE ?", "%"+c.Query("search")+"%").Limit(10).Find(&medicines)
+	database.Datasource.DB().Where("is_active", true).Where("name LIKE ?", "%"+c.Query("search")+"%").Preload("Healthcenter").Limit(10).Find(&medicines)
 	return c.Status(fiber.StatusOK).JSON(&medicines)
 }
 
 func GetMedicine(c *fiber.Ctx) error {
 	var medicine model.Medicine
-	database.Datasource.DB().Where("id", c.Params("id")).Where("is_active", true).First(&medicine)
+	database.Datasource.DB().Where("id", c.Params("id")).Where("is_active", true).Preload("Healthcenter").First(&medicine)
 	return c.Status(fiber.StatusOK).JSON(&medicine)
 }
 
