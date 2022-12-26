@@ -12,8 +12,15 @@ func GetAllDriver(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&drivers)
 }
 
+func GetDriverByHealthCenter(c *fiber.Ctx) error {
+	var drivers []model.Driver
+	healthcenterId := c.Params("healthcenter")
+	database.Datasource.DB().Where("healthcenter_id", healthcenterId).Order("name asc").Preload("Healthcenter").Find(&drivers)
+	return c.Status(fiber.StatusOK).JSON(&drivers)
+}
+
 func GetDriver(c *fiber.Ctx) error {
 	var driver model.Driver
-	database.Datasource.DB().Where("phone", c.Params("phone")).First(&driver)
+	database.Datasource.DB().Where("phone", c.Params("phone")).Preload("Healthcenter").First(&driver)
 	return c.Status(fiber.StatusOK).JSON(driver)
 }

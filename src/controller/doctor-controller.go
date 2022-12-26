@@ -12,16 +12,30 @@ func GetAllDoctor(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(doctors)
 }
 
+func GetDoctorByHealthCenter(c *fiber.Ctx) error {
+	var doctors []model.Doctor
+	healthcenterId := c.Params("healthcenter")
+	database.Datasource.DB().Where("is_active", true).Where("healthcenter_id", healthcenterId).Preload("Healthcenter").Order("end desc").Find(&doctors)
+	return c.Status(fiber.StatusOK).JSON(doctors)
+}
+
 func GetDoctor(c *fiber.Ctx) error {
 	username := c.Params("username")
 	var doctor model.Doctor
-	database.Datasource.DB().Where("username", username).First(&doctor)
+	database.Datasource.DB().Where("username", username).Preload("Healthcenter").First(&doctor)
 	return c.Status(fiber.StatusOK).JSON(doctor)
 }
 
 func GetAllSpecialist(c *fiber.Ctx) error {
 	var specialists []model.Specialist
 	database.Datasource.DB().Where("is_active", true).Order("end desc").Find(&specialists)
+	return c.Status(fiber.StatusOK).JSON(specialists)
+}
+
+func GetSpecialistByHealthCenter(c *fiber.Ctx) error {
+	var specialists []model.Specialist
+	healthcenterId := c.Params("healthcenter")
+	database.Datasource.DB().Where("is_active", true).Where("healthcenter_id", healthcenterId).Order("end desc").Find(&specialists)
 	return c.Status(fiber.StatusOK).JSON(specialists)
 }
 

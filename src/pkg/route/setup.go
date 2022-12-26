@@ -27,27 +27,38 @@ func Setup(app *fiber.App) {
 
 	medicines := v1.Group("medicines")
 	medicines.Get("/", controller.GetAllMedicine)
+	medicines.Get("/healthcenter/:healthcenter", controller.GetMedicineByHealthCenter)
 	medicines.Get("/:id", controller.GetMedicine)
 
 	doctors := v1.Group("doctors")
 	doctors.Get("/", controller.GetAllDoctor)
+	doctors.Get("/healthcenter/:healthcenter", controller.GetDoctorByHealthCenter)
 	doctors.Get("/detail/:username", controller.GetDoctor)
 
 	specialists := v1.Group("specialists")
 	specialists.Get("/", controller.GetAllSpecialist)
+	specialists.Get("/healthcenter/:healthcenter", controller.GetSpecialistByHealthCenter)
 	specialists.Get("/detail/:username", controller.GetSpecialist)
 
 	officers := v1.Group("officers")
 	officers.Get("/", controller.GetAllOfficer)
+	officers.Get("/healthcenter/:healthcenter", controller.GetOfficerByHealthCenter)
 	officers.Get("/:phone", controller.GetOfficer)
-
-	drivers := v1.Group("drivers")
-	drivers.Get("/", controller.GetAllDriver)
-	drivers.Get("/:phone", controller.GetDriver)
 
 	apothecaries := v1.Group("apothecaries")
 	apothecaries.Get("/", controller.GetAllApothecary)
+	apothecaries.Get("/healthcenter/:healthcenter", controller.GetApothecaryByHealthCenter)
 	apothecaries.Get("/:phone", controller.GetApothecary)
+
+	couriers := v1.Group("couriers")
+	couriers.Get("/", controller.GetAllCourier)
+	couriers.Get("/healthcenter/:healthcenter", controller.GetCourierByHealthCenter)
+	couriers.Get("/:phone", controller.GetCourier)
+
+	drivers := v1.Group("drivers")
+	drivers.Get("/", controller.GetAllDriver)
+	drivers.Get("/healthcenter/:healthcenter", controller.GetDriverByHealthCenter)
+	drivers.Get("/:phone", controller.GetDriver)
 
 	chat := v1.Group("chat")
 	chat.Post("/doctor", controller.ChatDoctor)
