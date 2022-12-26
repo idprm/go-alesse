@@ -29,6 +29,7 @@ type RegisterRequest struct {
 	Address      string `query:"address" validate:"required" json:"address"`
 	Latitude     string `query:"latitude" json:"latitude"`
 	Longitude    string `query:"longitude" json:"longitude"`
+	UrlGmap      string `query:"url_gmap" json:"url_gmap"`
 	IpAddress    string `query:"ip_address" json:"ip_address"`
 }
 
@@ -228,6 +229,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 				Address:        req.Address,
 				Latitude:       req.Latitude,
 				Longitude:      req.Longitude,
+				UrlGmap:        req.UrlGmap,
 				ActiveAt:       time.Now(),
 				IsActive:       true,
 			},
