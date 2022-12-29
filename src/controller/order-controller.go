@@ -21,11 +21,13 @@ const (
 	actionCreateNotif   = "AUTO CREATE NOTIF TO DOCTOR"
 	actionCreateMessage = "AUTO CREATE MESSAGE DOCTOR"
 	actionCreateNotifSP = "AUTO CREATE NOTIF TO SPECIALIST"
+	valMessageToDoctor  = "MESSAGE_TO_DOCTOR"
 )
 
 type OrderRequest struct {
-	Msisdn   string `json:"msisdn"`
-	DoctorID int    `json:"doctor_id"`
+	RequestType string `json:"request_type"`
+	Msisdn      string `json:"msisdn"`
+	DoctorID    int    `json:"doctor_id"`
 }
 
 func OrderChat(c *fiber.Ctx) error {
@@ -68,12 +70,20 @@ func OrderChat(c *fiber.Ctx) error {
 	/**
 	 * SENDBIRD PROCESS
 	 */
-	err = sendbirdProcess(order.ID, user.Healthcenter.ID, user.ID, doctor.ID)
+	err = sendbirdProcess(order.ID, user.Healthcenter.ID, user.ID, doctor.ID, req.RequestType)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
 			"message": err.Error(),
 			"status":  fiber.StatusBadGateway,
+		})
+	}
+
+	if req.RequestType == "mobile" {
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":   false,
+			"message": "Created Successfull",
+			"status":  fiber.StatusCreated,
 		})
 	}
 
@@ -85,7 +95,7 @@ func OrderChat(c *fiber.Ctx) error {
 	})
 }
 
-func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint) error {
+func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint, requestType string) error {
 
 	// var order model.Order
 	// database.Datasource.DB().
@@ -192,10 +202,6 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 		}
 		database.Datasource.DB().Create(&chat)
 
-		const (
-			valMessageToDoctor = "MESSAGE_TO_DOCTOR"
-		)
-
 		var status model.Status
 		database.Datasource.DB().Where("name", valMessageToDoctor).First(&status)
 
@@ -205,17 +211,19 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 		log.Println(notifMessage)
 		log.Println(userMessage)
 
-		// NOTIF MESSAGE TO DOCTOR
-		zenzifaNotif, err := handler.ZenzivaSendSMS(doctor.Phone, notifMessage)
-		if err != nil {
-			return errors.New(err.Error())
+		if requestType == "web" {
+			// NOTIF MESSAGE TO DOCTOR
+			zenzifaNotif, err := handler.ZenzivaSendSMS(doctor.Phone, notifMessage)
+			if err != nil {
+				return errors.New(err.Error())
+			}
+			// insert to zenziva
+			database.Datasource.DB().Create(&model.Zenziva{
+				Msisdn:   doctor.Phone,
+				Action:   actionCreateNotif,
+				Response: zenzifaNotif,
+			})
 		}
-		// insert to zenziva
-		database.Datasource.DB().Create(&model.Zenziva{
-			Msisdn:   doctor.Phone,
-			Action:   actionCreateNotif,
-			Response: zenzifaNotif,
-		})
 
 		// auto message to user
 		autoMessageDoctor, err := handler.SendbirdAutoMessageDoctor(url, doctor, user)
