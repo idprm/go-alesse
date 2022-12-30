@@ -22,5 +22,7 @@ type Chat struct {
 	IsLeave        bool         `gorm:"type:bool;default:false" json:"is_leave"`
 	LatestStatus   string       `gorm:"size:250;default:null" json:"latest_status"`
 	LatestLabel    string       `gorm:"size:25;default:null" json:"latest_label"`
-	gorm.Model     `json:"-"`
+	// Category       []Category   `gorm:"many2many:chat_categories;"`
+	// Disease        []Disease    `gorm:"many2many:chat_diseases;"`
+	gorm.Model `json:"-"`
 }

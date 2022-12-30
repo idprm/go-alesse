@@ -27,6 +27,8 @@ Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @
 #NOTIF_HOMECARE_TO_HEALTHOFFICE
 Hello Admin Dinkes @admin, tim homecare @health_center sudah menyelesaikan layanan homecare untuk pasien @patient
 
+// Hello pasien @patient, @doctor telah menjadwalkan kunjungan homecare dari @healthcenter pada tanggal @date pukul @time. Apabila ada pertanyaan silakan hubungi nomor ini @admin
+
 user level
 -> homecare
 -> admin dinkes

@@ -184,3 +184,28 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 		"data":    medicalresume,
 	})
 }
+
+func GetMedicalHistory(c *fiber.Ctx) error {
+
+	var user model.User
+	database.Datasource.DB().Where("msisdn", c.Params("msisdn")).First(&user)
+
+	if user.ID == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   true,
+			"code":    fiber.StatusNotFound,
+			"message": "User not found",
+		})
+	}
+
+	var chat []model.Chat
+	database.Datasource.DB().Where("user_id", user.ID).Preload("User").Preload("Doctor").Preload("Healthcenter").Find(&chat)
+
+	log.Println(chat)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Successfull",
+		"data":    chat,
+	})
+}

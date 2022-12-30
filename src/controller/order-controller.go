@@ -70,7 +70,7 @@ func OrderChat(c *fiber.Ctx) error {
 	/**
 	 * SENDBIRD PROCESS
 	 */
-	err = sendbirdProcess(order.ID, user.Healthcenter.ID, user.ID, doctor.ID, req.RequestType)
+	channelUrl, err := sendbirdProcess(order.ID, user.Healthcenter.ID, user.ID, doctor.ID, req.RequestType)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   true,
@@ -79,11 +79,17 @@ func OrderChat(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Println(channelUrl)
+
+	var chat model.Chat
+	database.Datasource.DB().Where("channel_url", channelUrl).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
+
 	if req.RequestType == "mobile" {
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 			"error":   false,
 			"message": "Created Successfull",
 			"status":  fiber.StatusCreated,
+			"data":    chat,
 		})
 	}
 
@@ -95,7 +101,7 @@ func OrderChat(c *fiber.Ctx) error {
 	})
 }
 
-func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint, requestType string) error {
+func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint, requestType string) (string, error) {
 
 	// var order model.Order
 	// database.Datasource.DB().
@@ -116,7 +122,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 	 */
 	getUser, isUser, err := handler.SendbirdGetUser(user)
 	if err != nil {
-		return errors.New(err.Error())
+		return "", errors.New(err.Error())
 	}
 
 	/**
@@ -133,7 +139,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 		// create user sendbird
 		createUser, err := handler.SendbirdCreateUser(user)
 		if err != nil {
-			return errors.New(err.Error())
+			return "", errors.New(err.Error())
 		}
 		// insert to sendbird
 		database.Datasource.DB().Create(&model.Sendbird{
@@ -148,7 +154,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 
 	getChannel, isChannel, err := handler.SendbirdGetGroupChannel(chat)
 	if err != nil {
-		return errors.New(err.Error())
+		return "", errors.New(err.Error())
 	}
 
 	// insert to sendbird
@@ -165,7 +171,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 			// delete channel sendbird
 			deleteGroupChannel, err := handler.SendbirdDeleteGroupChannel(chat)
 			if err != nil {
-				return errors.New(err.Error())
+				return "", errors.New(err.Error())
 			}
 			// delete chat
 			database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
@@ -181,7 +187,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 	// create group
 	createGroup, name, url, err := handler.SendbirdCreateGroupChannel(doctor, user)
 	if err != nil {
-		return errors.New(err.Error())
+		return "", errors.New(err.Error())
 	}
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
@@ -215,7 +221,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 			// NOTIF MESSAGE TO DOCTOR
 			zenzifaNotif, err := handler.ZenzivaSendSMS(doctor.Phone, notifMessage)
 			if err != nil {
-				return errors.New(err.Error())
+				return "", errors.New(err.Error())
 			}
 			// insert to zenziva
 			database.Datasource.DB().Create(&model.Zenziva{
@@ -228,7 +234,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 		// auto message to user
 		autoMessageDoctor, err := handler.SendbirdAutoMessageDoctor(url, doctor, user)
 		if err != nil {
-			return errors.New(err.Error())
+			return "", errors.New(err.Error())
 		}
 
 		// insert to sendbird
@@ -251,5 +257,5 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 
 	}
 
-	return nil
+	return url, nil
 }

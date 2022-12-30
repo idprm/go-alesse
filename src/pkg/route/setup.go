@@ -116,6 +116,9 @@ func Setup(app *fiber.App) {
 	users.Get("/:msisdn", controller.GetUserByMsisdn)
 	users.Get("/transactions/:msisdn", controller.GetTransactionByUser)
 
+	histories := v1.Group("histories")
+	histories.Get("/:msisdn", controller.GetMedicalHistory)
+
 	/**
 	 * AUTHENTICATED ROUTES
 	 */
