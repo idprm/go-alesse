@@ -8,6 +8,7 @@ import (
 )
 
 type PrescriptionRequest struct {
+	RequestType     string                        `query:"request_type" validate:"required" json:"request_type"`
 	ChatID          uint64                        `query:"chat_id" validate:"required" json:"chat_id"`
 	AllergyMedicine string                        `query:"allergy_medicine" json:"allergy_medicine"`
 	Diagnosis       string                        `query:"diagnosis" json:"diagnosis"`

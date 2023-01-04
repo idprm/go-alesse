@@ -6,4 +6,5 @@ type Status struct {
 	ValueSystem string `gorm:"size:300" json:"value_system"`
 	ValueUser   string `gorm:"size:300" json:"value_user"`
 	ValueNotif  string `gorm:"size:300" json:"value_notif"`
+	ValuePush   string `gorm:"size:300" json:"value_push"`
 }

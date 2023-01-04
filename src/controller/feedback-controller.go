@@ -10,10 +10,11 @@ import (
 )
 
 type FeedbackRequest struct {
-	ChatID     uint64  `query:"chat_id" validate:"required" json:"chat_id"`
-	Slug       string  `query:"slug" validate:"required" json:"slug"`
-	Rating     float32 `query:"rating" validate:"required" json:"rating"`
-	Suggestion string  `query:"suggestion" validate:"required" json:"suggestion"`
+	RequestType string  `query:"request_type" validate:"required" json:"request_type"`
+	ChatID      uint64  `query:"chat_id" validate:"required" json:"chat_id"`
+	Slug        string  `query:"slug" validate:"required" json:"slug"`
+	Rating      float32 `query:"rating" validate:"required" json:"rating"`
+	Suggestion  string  `query:"suggestion" validate:"required" json:"suggestion"`
 }
 
 func ValidateFeedback(req FeedbackRequest) []*ErrorResponse {

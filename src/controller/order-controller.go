@@ -79,17 +79,18 @@ func OrderChat(c *fiber.Ctx) error {
 		})
 	}
 
-	log.Println(channelUrl)
-
 	var chat model.Chat
 	database.Datasource.DB().Where("channel_url", channelUrl).Preload("Doctor").Preload("User").Preload("Healthcenter").First(&chat)
 
+	var status model.Status
+	database.Datasource.DB().Where("name", valMessageToDoctor).First(&status)
+
 	if req.RequestType == "mobile" {
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"error":   false,
-			"message": "Created Successfull",
-			"status":  fiber.StatusCreated,
-			"data":    chat,
+			"error":        false,
+			"message":      "Created Successfull",
+			"status":       fiber.StatusCreated,
+			"push_message": status.ValuePush,
 		})
 	}
 
@@ -102,14 +103,6 @@ func OrderChat(c *fiber.Ctx) error {
 }
 
 func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorId uint, requestType string) (string, error) {
-
-	// var order model.Order
-	// database.Datasource.DB().
-	// 	Where("healthcenter_id", healthcenterId).
-	// 	Where("user_id", userId).
-	// 	Where("doctor_id", doctorId).
-	// 	Preload("Healthcenter").Preload("User").Preload("Doctor").
-	// 	First(&order)
 
 	var user model.User
 	database.Datasource.DB().Where("id", userId).First(&user)
@@ -213,9 +206,11 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 
 		notifMessage := util.ContentMessageToDoctor(status.ValueNotif, user, doctor, url)
 		userMessage := util.StatusMessageToDoctor(status.ValueUser, user, doctor)
+		pushMessage := util.PushMessageToDoctor(status.ValuePush, user, doctor)
 
 		log.Println(notifMessage)
 		log.Println(userMessage)
+		log.Println(pushMessage)
 
 		if requestType == "web" {
 			// NOTIF MESSAGE TO DOCTOR
@@ -252,6 +247,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 				SystemStatus: status.ValueSystem,
 				NotifStatus:  notifMessage,
 				UserStatus:   userMessage,
+				PushStatus:   pushMessage,
 			},
 		)
 

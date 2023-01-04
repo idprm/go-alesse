@@ -17,6 +17,7 @@ import (
 )
 
 type HomecareRequest struct {
+	RequestType    string                    `query:"request_type" validate:"required" json:"request_type"`
 	ChatID         uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
 	PainComplaints string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
 	EarlyDiagnosis string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
@@ -36,6 +37,7 @@ type HomecareMedicineRequest struct {
 }
 
 type HomecareOfficerRequest struct {
+	RequestType  string `query:"request_type" validate:"required" json:"request_type"`
 	HomecareID   uint64 `query:"homecare_id" validate:"required" json:"homecare_id"`
 	Slug         string `query:"slug" json:"slug"`
 	DoctorID     uint   `query:"doctor_id" json:"doctor_id"`
@@ -45,6 +47,7 @@ type HomecareOfficerRequest struct {
 }
 
 type HomecareResumeRequest struct {
+	RequestType          string                    `query:"request_type" validate:"required" json:"request_type"`
 	HomecareID           uint64                    `query:"homecare_id" validate:"required" json:"homecare_id"`
 	Slug                 string                    `query:"slug" json:"slug"`
 	PhysicaleExamination string                    `query:"physicale_examination" json:"physicale_examination"`
@@ -100,6 +103,14 @@ func ValidateHomecareResume(req HomecareResumeRequest) []*ErrorResponse {
 	}
 	return errors
 }
+
+const (
+	valHomecareToPatientDone     = "HOMECARE_TO_PATIENT_DONE"
+	valHomecareToHealthOffice    = "HOMECARE_TO_HEALTHOFFICE"
+	valDoctorToHomecare          = "DOCTOR_TO_HOMECARE"
+	valHomecareToPatientProgress = "HOMECARE_TO_PATIENT_PROGRESS"
+	// valMessageToUser    = "MESSAGE_TO_USER"
+)
 
 func GetAllHomecare(c *fiber.Ctx) error {
 	var homecares []model.Homecare
@@ -176,6 +187,18 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
 
+	var hc model.Homecare
+	database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
+
+	var officer model.Officer
+	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
+
+	var statusDoctorToHomecare model.Status
+	database.Datasource.DB().Where("name", valDoctorToHomecare).First(&statusDoctorToHomecare)
+	notifMessageDoctorToHomecare := util.ContentDoctorToHomecare(statusDoctorToHomecare.ValueNotif, hc)
+	userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
+	pushMessageDoctorToHomecare := util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, hc)
+
 	if isExist.RowsAffected == 0 {
 		homecare := model.Homecare{
 			ChatID:         req.ChatID,
@@ -202,23 +225,9 @@ func SaveHomecare(c *fiber.Ctx) error {
 			})
 		}
 
-		var hc model.Homecare
-		database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
-
-		var officer model.Officer
-		database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
-
-		const (
-			valDoctorToHomecare = "DOCTOR_TO_HOMECARE"
-			// valMessageToUser    = "MESSAGE_TO_USER"
-		)
-		var statusDoctorToHomecare model.Status
-		database.Datasource.DB().Where("name", valDoctorToHomecare).First(&statusDoctorToHomecare)
-		notifMessageDoctorToHomecare := util.ContentDoctorToHomecare(statusDoctorToHomecare.ValueNotif, hc)
-		userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
-
 		log.Println(notifMessageDoctorToHomecare)
 		log.Println(userMessageDoctorToHomecare)
+		log.Println(pushMessageDoctorToHomecare)
 
 		// var statusMessageToUser model.Status
 		// database.Datasource.DB().Where("name", valMessageToUser).First(&statusMessageToUser)
@@ -228,30 +237,32 @@ func SaveHomecare(c *fiber.Ctx) error {
 		// log.Println(notifMessageToUser)
 		// log.Println(userMessageToUser)
 
-		zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, notifMessageDoctorToHomecare)
-		if err != nil {
-			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-				"error":   true,
-				"message": err.Error(),
-			})
+		if req.RequestType == "web" {
+			zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, notifMessageDoctorToHomecare)
+			if err != nil {
+				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+					"error":   true,
+					"message": err.Error(),
+				})
+			}
+
+			// zenzivaMessageToUser, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageToUser)
+			// if err != nil {
+			// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+			// 		"error":   true,
+			// 		"message": err.Error(),
+			// 	})
+			// }
+
+			// insert to zenziva
+			database.Datasource.DB().Create(
+				&model.Zenziva{
+					Msisdn:   officer.Phone,
+					Action:   valDoctorToHomecare,
+					Response: zenzivaDoctorToHomecare,
+				},
+			)
 		}
-
-		// zenzivaMessageToUser, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageToUser)
-		// if err != nil {
-		// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-		// 		"error":   true,
-		// 		"message": err.Error(),
-		// 	})
-		// }
-
-		// insert to zenziva
-		database.Datasource.DB().Create(
-			&model.Zenziva{
-				Msisdn:   officer.Phone,
-				Action:   valDoctorToHomecare,
-				Response: zenzivaDoctorToHomecare,
-			},
-		)
 
 		// insert to transaction
 		database.Datasource.DB().Create(
@@ -261,6 +272,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 				SystemStatus: statusDoctorToHomecare.ValueSystem,
 				NotifStatus:  notifMessageDoctorToHomecare,
 				UserStatus:   userMessageDoctorToHomecare,
+				PushStatus:   pushMessageDoctorToHomecare,
 			},
 		)
 
@@ -309,6 +321,15 @@ func SaveHomecare(c *fiber.Ctx) error {
 	ch.IsLeave = true
 	ch.LeaveAt = time.Now()
 	database.Datasource.DB().Save(&ch)
+
+	if req.RequestType == "mobile" {
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":        false,
+			"message":      "Submited",
+			"data":         homecare,
+			"push_message": pushMessageDoctorToHomecare,
+		})
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
@@ -372,33 +393,35 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	var officer model.Officer
 	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
 
-	const (
-		valHomecareToPatientProgress = "HOMECARE_TO_PATIENT_PROGRESS"
-	)
 	var status model.Status
 	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&status)
 	notifMessageHomecareToPatientProgress := util.ContentHomecareToPatientProgress(status.ValueNotif, hc, officer)
 	userMessageHomecareToPatientProgress := util.StatusHomecareToPatientProgress(status.ValueNotif, hc)
+	pushMessageHomecareToPatientProgress := util.PushHomecareToPatientProgress(status.ValuePush, hc, officer)
 
 	log.Println(notifMessageHomecareToPatientProgress)
 	log.Println(userMessageHomecareToPatientProgress)
+	log.Println(pushMessageHomecareToPatientProgress)
 
-	zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientProgress)
-	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			"error":   true,
-			"message": err.Error(),
-		})
+	if req.RequestType == "web" {
+		zenzivaHomecareToPatientProgress, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientProgress)
+		if err != nil {
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+				"error":   true,
+				"message": err.Error(),
+			})
+		}
+
+		// insert to zenziva
+		database.Datasource.DB().Create(
+			&model.Zenziva{
+				Msisdn:   hc.Chat.User.Msisdn,
+				Action:   valHomecareToPatientProgress,
+				Response: zenzivaHomecareToPatientProgress,
+			},
+		)
+
 	}
-
-	// insert to zenziva
-	database.Datasource.DB().Create(
-		&model.Zenziva{
-			Msisdn:   hc.Chat.User.Msisdn,
-			Action:   valHomecareToPatientProgress,
-			Response: zenzivaHomecareToPatientProgress,
-		},
-	)
 
 	// insert to transaction
 	database.Datasource.DB().Create(
@@ -408,8 +431,18 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 			SystemStatus: status.ValueSystem,
 			NotifStatus:  notifMessageHomecareToPatientProgress,
 			UserStatus:   userMessageHomecareToPatientProgress,
+			PushStatus:   pushMessageHomecareToPatientProgress,
 		},
 	)
+
+	if req.RequestType == "mobile" {
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":        false,
+			"message":      "Visited",
+			"data":         homecareOfficer,
+			"push_message": pushMessageHomecareToPatientProgress,
+		})
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,
@@ -474,54 +507,56 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 	var superadmin model.SuperAdmin
 	database.Datasource.DB().First(&superadmin)
 
-	const (
-		valHomecareToPatientDone  = "HOMECARE_TO_PATIENT_DONE"
-		valHomecareToHealthOffice = "HOMECARE_TO_HEALTHOFFICE"
-	)
 	var statusHomecareToPatientDone model.Status
 	database.Datasource.DB().Where("name", valHomecareToPatientDone).First(&statusHomecareToPatientDone)
 	notifMessageHomecareToPatientDone := util.ContentHomecareToPatientDone(statusHomecareToPatientDone.ValueNotif, hc)
 	userMessageHomecareToPatientDone := util.StatusHomecareToPatientDone(statusHomecareToPatientDone.ValueUser, hc)
+	pushMessageHomecareToPatientDone := util.PushHomecareToPatientDone(statusHomecareToPatientDone.ValuePush, hc)
 
 	log.Println(notifMessageHomecareToPatientDone)
 	log.Println(userMessageHomecareToPatientDone)
+	log.Println(pushMessageHomecareToPatientDone)
 
 	var statusHomecareToHealthOffice model.Status
 	database.Datasource.DB().Where("name", valHomecareToHealthOffice).First(&statusHomecareToHealthOffice)
 	notifMessageHomecareToHealthOffice := util.ContentHomecareToHealthoffice(statusHomecareToHealthOffice.ValueNotif, hc)
 	userMessageHomecareToHealthOffice := util.StatusHomecareToHealthoffice(statusHomecareToHealthOffice.ValueUser, hc)
+	pushMessageHomecareToHealthOffice := util.PushHomecareToHealthoffice(statusHomecareToHealthOffice.ValueUser, hc)
 
 	log.Println(notifMessageHomecareToHealthOffice)
 	log.Println(userMessageHomecareToHealthOffice)
+	log.Println(pushMessageHomecareToHealthOffice)
 
-	zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientDone)
-	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			"error":   true,
-			"message": err.Error(),
-		})
+	if req.RequestType == "web" {
+		zenzivaHomecareToPatientDone, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageHomecareToPatientDone)
+		if err != nil {
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+				"error":   true,
+				"message": err.Error(),
+			})
+		}
+
+		zenzivaHomecareToHealthOffice, err := handler.ZenzivaSendSMS(superadmin.Phone, notifMessageHomecareToHealthOffice)
+		if err != nil {
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+				"error":   true,
+				"message": err.Error(),
+			})
+		}
+
+		// insert to zenziva
+		database.Datasource.DB().Create(
+			&[]model.Zenziva{{
+				Msisdn:   hc.Chat.User.Msisdn,
+				Action:   valHomecareToPatientDone,
+				Response: zenzivaHomecareToPatientDone,
+			}, {
+				Msisdn:   superadmin.Phone,
+				Action:   valHomecareToHealthOffice,
+				Response: zenzivaHomecareToHealthOffice,
+			}},
+		)
 	}
-
-	zenzivaHomecareToHealthOffice, err := handler.ZenzivaSendSMS(superadmin.Phone, notifMessageHomecareToHealthOffice)
-	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			"error":   true,
-			"message": err.Error(),
-		})
-	}
-
-	// insert to zenziva
-	database.Datasource.DB().Create(
-		&[]model.Zenziva{{
-			Msisdn:   hc.Chat.User.Msisdn,
-			Action:   valHomecareToPatientDone,
-			Response: zenzivaHomecareToPatientDone,
-		}, {
-			Msisdn:   superadmin.Phone,
-			Action:   valHomecareToHealthOffice,
-			Response: zenzivaHomecareToHealthOffice,
-		}},
-	)
 
 	// insert to transaction
 	database.Datasource.DB().Create(
@@ -531,14 +566,33 @@ func SaveHomecareResume(c *fiber.Ctx) error {
 			SystemStatus: statusHomecareToPatientDone.ValueSystem,
 			NotifStatus:  notifMessageHomecareToPatientDone,
 			UserStatus:   userMessageHomecareToPatientDone,
+			PushStatus:   pushMessageHomecareToPatientDone,
 		}, {
 			UserID:       hc.Chat.UserID,
 			ChatID:       hc.ChatID,
 			SystemStatus: statusHomecareToHealthOffice.ValueSystem,
 			NotifStatus:  notifMessageHomecareToHealthOffice,
 			UserStatus:   userMessageHomecareToHealthOffice,
+			PushStatus:   pushMessageHomecareToHealthOffice,
 		}},
 	)
+
+	type resPushMessage struct {
+		Patient      string `json:"patient"`
+		HealthOffice string `json:"healthoffice"`
+	}
+
+	if req.RequestType == "mobile" {
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":   false,
+			"message": "Submited",
+			"data":    homecareOfficer,
+			"push_message": &resPushMessage{
+				Patient:      pushMessageHomecareToPatientDone,
+				HealthOffice: pushMessageHomecareToHealthOffice,
+			},
+		})
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,

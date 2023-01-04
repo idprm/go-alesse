@@ -13,6 +13,7 @@ import (
 )
 
 type MedicalResumeRequest struct {
+	RequestType    string `query:"request_type" validate:"required" json:"request_type"`
 	ChatID         uint64 `query:"chat_id" validate:"required" json:"chat_id"`
 	Weight         uint   `query:"weight" validate:"required" json:"weight"`
 	PainComplaints string `query:"pain_complaints" json:"pain_complaints"`
@@ -125,26 +126,30 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("name", valFeedbackToPatient).First(&status)
 	notifMessage := util.ContentFeedbackToPatient(status.ValueNotif, chat)
 	userMessage := util.StatusFeedbackToPatient(status.ValueUser, chat)
+	pushMessage := util.PushFeedbackToPatient(status.ValuePush, chat)
 
 	log.Println(notifMessage)
 	log.Println(userMessage)
+	log.Println(pushMessage)
 
-	zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, notifMessage)
-	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			"error":   true,
-			"message": err.Error(),
-		})
+	if req.RequestType == "web" {
+		zenzivaFeedbackToPatient, err := handler.ZenzivaSendSMS(chat.User.Msisdn, notifMessage)
+		if err != nil {
+			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+				"error":   true,
+				"message": err.Error(),
+			})
+		}
+
+		// insert to zenziva
+		database.Datasource.DB().Create(
+			&model.Zenziva{
+				Msisdn:   chat.User.Msisdn,
+				Action:   valFeedbackToPatient,
+				Response: zenzivaFeedbackToPatient,
+			},
+		)
 	}
-
-	// insert to zenziva
-	database.Datasource.DB().Create(
-		&model.Zenziva{
-			Msisdn:   chat.User.Msisdn,
-			Action:   valFeedbackToPatient,
-			Response: zenzivaFeedbackToPatient,
-		},
-	)
 
 	// insert to transaction
 	database.Datasource.DB().Create(
@@ -154,6 +159,7 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 			SystemStatus: status.ValueSystem,
 			NotifStatus:  notifMessage,
 			UserStatus:   userMessage,
+			PushStatus:   pushMessage,
 		},
 	)
 
@@ -177,6 +183,16 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	ch.IsLeave = true
 	ch.LeaveAt = time.Now()
 	database.Datasource.DB().Save(&ch)
+
+	if req.RequestType == "mobile" {
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"error":        false,
+			"code":         fiber.StatusCreated,
+			"message":      "Submited",
+			"data":         medicalresume,
+			"push_message": pushMessage,
+		})
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error":   false,

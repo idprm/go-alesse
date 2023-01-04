@@ -13,6 +13,7 @@ import (
 )
 
 type ReferralRequest struct {
+	RequestType  string `query:"request_type" validate:"required" json:"request_type"`
 	ChannelUrl   string `query:"channel_url" json:"channel_url"`
 	SpecialistID int    `query:"specialist_id" json:"specialist_id"`
 }
@@ -20,6 +21,10 @@ type ReferralRequest struct {
 type ReferralChatRequest struct {
 	ChannelUrl string `query:"channel_url" validate:"required" json:"channel_url"`
 }
+
+const (
+	valMessageToSpecialist = "MESSAGE_TO_SPECIALIST"
+)
 
 func Referral(c *fiber.Ctx) error {
 	c.Accepts("application/json")
@@ -53,12 +58,24 @@ func Referral(c *fiber.Ctx) error {
 		/**
 		 * SENDBIRD PROCESS
 		 */
-		channelUrl, err := sendbirdProcessReferral(chat.ID, specialist.ID, chat.DoctorID)
+		channelUrl, err := sendbirdProcessReferral(chat.ID, specialist.ID, chat.DoctorID, req.RequestType)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
 				"message": err.Error(),
 				"status":  fiber.StatusBadGateway,
+			})
+		}
+
+		var status model.Status
+		database.Datasource.DB().Where("name", valMessageToSpecialist).First(&status)
+
+		if req.RequestType == "mobile" {
+			return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+				"error":        false,
+				"code":         fiber.StatusCreated,
+				"message":      "Created Successfull",
+				"push_message": status.ValuePush,
 			})
 		}
 
@@ -68,6 +85,7 @@ func Referral(c *fiber.Ctx) error {
 			"redirect_url": config.ViperEnv("APP_HOST") + "/referral/" + channelUrl,
 			"status":       fiber.StatusCreated,
 		})
+
 	} else {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"error":        false,
@@ -97,7 +115,7 @@ func ReferralChat(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(referral)
 }
 
-func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (string, error) {
+func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, requestType string) (string, error) {
 
 	var chat model.Chat
 	database.Datasource.DB().Where("id", chatId).First(&chat)
@@ -148,30 +166,30 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 				ChannelUrl:   url,
 			})
 
-		const (
-			valMessageToSpecialist = "MESSAGE_TO_SPECIALIST"
-		)
-
 		var status model.Status
 		database.Datasource.DB().Where("name", valMessageToSpecialist).First(&status)
 
 		notifMessageToSpecialist := util.ContentMessageToSpecialist(status.ValueNotif, specialist, doctor, url)
 		userMessageToSpecialist := util.StatusMessageToSpecialist(status.ValueUser, specialist, doctor)
+		pushMessageToSpecialist := util.PushMessageToSpecialist(status.ValuePush, specialist, doctor)
 
 		log.Println(notifMessageToSpecialist)
 		log.Println(userMessageToSpecialist)
+		log.Println(pushMessageToSpecialist)
 
-		// NOTIF MESSAGE TO SPECIALIST
-		zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, notifMessageToSpecialist)
-		if err != nil {
-			return "", errors.New(err.Error())
+		if requestType == "web" {
+			// NOTIF MESSAGE TO SPECIALIST
+			zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, notifMessageToSpecialist)
+			if err != nil {
+				return "", errors.New(err.Error())
+			}
+			// insert to zenziva
+			database.Datasource.DB().Create(&model.Zenziva{
+				Msisdn:   specialist.Phone,
+				Action:   actionCreateNotifSP,
+				Response: zenzifaNotif,
+			})
 		}
-		// insert to zenziva
-		database.Datasource.DB().Create(&model.Zenziva{
-			Msisdn:   specialist.Phone,
-			Action:   actionCreateNotifSP,
-			Response: zenzifaNotif,
-		})
 
 		// insert to transaction
 		database.Datasource.DB().Create(
@@ -181,6 +199,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint) (s
 				SystemStatus: status.ValueSystem,
 				NotifStatus:  notifMessageToSpecialist,
 				UserStatus:   userMessageToSpecialist,
+				PushStatus:   pushMessageToSpecialist,
 			},
 		)
 

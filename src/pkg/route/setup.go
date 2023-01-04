@@ -142,4 +142,5 @@ func Setup(app *fiber.App) {
 	auth2.Post("apothecary", controller.MAuthApothecaryHandler)
 	auth2.Post("courier", controller.MAuthCourierHandler)
 	auth2.Post("specialist", controller.MAuthSpecialistHandler)
+
 }

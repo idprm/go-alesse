@@ -14,5 +14,6 @@ type PharmacyCourier struct {
 	FinishAt   time.Time `gorm:"default:null" json:"finish_at"`
 	IsTake     bool      `gorm:"type:bool;default:false" json:"is_take"`
 	IsFinish   bool      `gorm:"type:bool;default:false" json:"is_finish"`
+	ReceivedBy string    `gorm:"size:200;default:null" json:"received_by"`
 	gorm.Model `json:"-"`
 }
