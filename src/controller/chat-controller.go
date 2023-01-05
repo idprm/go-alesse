@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
 	"github.com/idprm/go-alesse/src/pkg/handler"
@@ -32,7 +34,7 @@ func ChatUser(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("healthcenter_id", user.HealthcenterID).Where("user_id", user.ID).Last(&order)
 
 	var chat model.Chat
-	database.Datasource.DB().Where("order_id", order.ID).Where("is_leave", false).Preload("User").Preload("Doctor").First(&chat)
+	database.Datasource.DB().Where("order_id", order.ID).Where("is_leave", false).Preload("User.Healthcenter").Preload("Order.Healthcenter").Preload("Healthcenter").Preload("Doctor.Healthcenter").First(&chat)
 
 	return c.Status(fiber.StatusOK).JSON(&chat)
 }
@@ -41,9 +43,8 @@ func ChatDoctor(c *fiber.Ctx) error {
 	c.Accepts("application/json")
 
 	channelUrl := c.Query("channel_url")
-
 	var chat model.Chat
-	database.Datasource.DB().Where("channel_url", channelUrl).Preload("User").Preload("Doctor").Preload("Order").Preload("Healthcenter").First(&chat)
+	database.Datasource.DB().Where("channel_url", channelUrl).Preload("User.Healthcenter").Preload("Doctor.Healthcenter").Preload("Order.Healthcenter").Preload("Healthcenter").First(&chat)
 
 	return c.Status(fiber.StatusOK).JSON(&chat)
 }
@@ -66,7 +67,7 @@ func ChatLeave(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("msisdn", req.Msisdn).First(&user)
 
 	var chat model.Chat
-	database.Datasource.DB().Where("user_id", user.ID).First(&chat)
+	database.Datasource.DB().Where("user_id", user.ID).Where("is_leave", false).First(&chat)
 
 	leaveGroupChannel, isLeave, err := handler.SendbirdLeaveGroupChannel(chat.ChannelUrl, user.Msisdn)
 	if err != nil {
@@ -83,7 +84,8 @@ func ChatLeave(c *fiber.Ctx) error {
 	})
 
 	if isLeave == true {
-
+		// update chat is leave = true
+		database.Datasource.DB().Model(&model.Chat{}).Where("id", chat.ID).Updates(&model.Chat{IsLeave: true, LeaveAt: time.Now()})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"error": false, "message": "Leaved"})
 }

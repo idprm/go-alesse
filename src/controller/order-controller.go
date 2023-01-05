@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/idprm/go-alesse/src/database"
@@ -90,6 +91,7 @@ func OrderChat(c *fiber.Ctx) error {
 			"error":        false,
 			"message":      "Created Successfull",
 			"status":       fiber.StatusCreated,
+			"channel_url":  channelUrl,
 			"push_message": pushNotif,
 		})
 	}
@@ -143,7 +145,7 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 	}
 
 	var chat model.Chat
-	resultChat := database.Datasource.DB().Where("user_id", user.ID).First(&chat)
+	resultChat := database.Datasource.DB().Where("user_id", user.ID).Where("is_leave", false).First(&chat)
 
 	getChannel, isChannel, err := handler.SendbirdGetGroupChannel(chat)
 	if err != nil {
@@ -167,7 +169,10 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 				return "", "", errors.New(err.Error())
 			}
 			// delete chat
-			database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
+			// database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
+
+			// update chat is leave = true
+			database.Datasource.DB().Model(&model.Chat{}).Where("id", chat.ID).Updates(&model.Chat{IsLeave: true, LeaveAt: time.Now()})
 			// insert to sendbirds
 			database.Datasource.DB().Create(&model.Sendbird{
 				Msisdn:   user.Msisdn,
