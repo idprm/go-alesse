@@ -58,7 +58,7 @@ func Referral(c *fiber.Ctx) error {
 		/**
 		 * SENDBIRD PROCESS
 		 */
-		channelUrl, err := sendbirdProcessReferral(chat.ID, specialist.ID, chat.DoctorID, req.RequestType)
+		channelUrl, pushMessage, err := sendbirdProcessReferral(chat.ID, specialist.ID, chat.DoctorID, req.RequestType)
 		if err != nil {
 			return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 				"error":   true,
@@ -75,7 +75,8 @@ func Referral(c *fiber.Ctx) error {
 				"error":        false,
 				"code":         fiber.StatusCreated,
 				"message":      "Created Successfull",
-				"push_message": status.ValuePush,
+				"channel_url":  channelUrl,
+				"push_message": pushMessage,
 			})
 		}
 
@@ -87,6 +88,14 @@ func Referral(c *fiber.Ctx) error {
 		})
 
 	} else {
+		if req.RequestType == "mobile" {
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"error":       false,
+				"message":     "Already chat",
+				"channel_url": referral.ChannelUrl,
+				"status":      fiber.StatusOK,
+			})
+		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"error":        false,
 			"message":      "Already chat",
@@ -115,7 +124,7 @@ func ReferralChat(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(referral)
 }
 
-func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, requestType string) (string, error) {
+func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, requestType string) (string, string, error) {
 
 	var chat model.Chat
 	database.Datasource.DB().Where("id", chatId).First(&chat)
@@ -131,7 +140,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 	 */
 	getSpecialist, _, err := handler.SendbirdGetSpecialist(specialist)
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", "", errors.New(err.Error())
 	}
 
 	/**
@@ -146,7 +155,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 	// create group
 	createGroup, name, url, err := handler.SendbirdReferralCreateGroupChannel(specialist, doctor)
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", "", errors.New(err.Error())
 	}
 	// insert to sendbird
 	database.Datasource.DB().Create(&model.Sendbird{
@@ -154,6 +163,8 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 		Action:   actionCreateGroup,
 		Response: createGroup,
 	})
+
+	var pushMessageToSpecialist = ""
 
 	if name != "" && url != "" {
 		// insert to chat referral
@@ -171,7 +182,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 
 		notifMessageToSpecialist := util.ContentMessageToSpecialist(status.ValueNotif, specialist, doctor, url)
 		userMessageToSpecialist := util.StatusMessageToSpecialist(status.ValueUser, specialist, doctor)
-		pushMessageToSpecialist := util.PushMessageToSpecialist(status.ValuePush, specialist, doctor)
+		pushMessageToSpecialist = util.PushMessageToSpecialist(status.ValuePush, specialist, doctor)
 
 		log.Println(notifMessageToSpecialist)
 		log.Println(userMessageToSpecialist)
@@ -181,7 +192,7 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 			// NOTIF MESSAGE TO SPECIALIST
 			zenzifaNotif, err := handler.ZenzivaSendSMS(specialist.Phone, notifMessageToSpecialist)
 			if err != nil {
-				return "", errors.New(err.Error())
+				return "", "", errors.New(err.Error())
 			}
 			// insert to zenziva
 			database.Datasource.DB().Create(&model.Zenziva{
@@ -205,5 +216,5 @@ func sendbirdProcessReferral(chatId uint64, specialistId uint, doctorId uint, re
 
 	}
 
-	return url, nil
+	return url, pushMessageToSpecialist, nil
 }

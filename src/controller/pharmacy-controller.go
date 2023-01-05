@@ -40,7 +40,8 @@ type PharmacyMedicineRequest struct {
 }
 
 type PharmacyProcessRequest struct {
-	PharmacyID uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
+	RequestType string `query:"request_type" validate:"required" json:"request_type"`
+	PharmacyID  uint64 `query:"pharmacy_id" validate:"required" json:"pharmacy_id"`
 }
 
 type PharmacySentRequest struct {
@@ -409,14 +410,19 @@ func SaveProcessPharmacy(c *fiber.Ctx) error {
 	var pharmacyApothecary model.PharmacyApothecary
 	existPharmacyApothecary := database.Datasource.DB().Where("pharmacy_id", req.PharmacyID).First(&pharmacyApothecary)
 
+	var apothecary model.Apothecary
+	database.Datasource.DB().Where("healthcenter_id").First(&apothecary)
+
 	if existPharmacyApothecary.RowsAffected == 0 {
 		pharmacyApothecary := model.PharmacyApothecary{
-			PharmacyID: req.PharmacyID,
-			ProcessAt:  time.Now(),
-			IsProcess:  true,
+			PharmacyID:   req.PharmacyID,
+			ApothecaryID: 1,
+			ProcessAt:    time.Now(),
+			IsProcess:    true,
 		}
 		database.Datasource.DB().Create(&pharmacyApothecary)
 	} else {
+		pharmacyApothecary.ApothecaryID = 1
 		pharmacyApothecary.ProcessAt = time.Now()
 		pharmacyApothecary.IsProcess = true
 		database.Datasource.DB().Save(&pharmacyApothecary)
