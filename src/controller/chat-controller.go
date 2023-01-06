@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -84,9 +85,11 @@ func ChatLeave(c *fiber.Ctx) error {
 	})
 
 	if isLeave == true {
-		// update chat is leave = true
-		database.Datasource.DB().Model(&model.Chat{}).Where("id", chat.ID).Updates(&model.Chat{IsLeave: true, LeaveAt: time.Now()})
+		log.Println("leaved")
 	}
+	// update chat is leave = true
+	database.Datasource.DB().Model(&model.Chat{}).Where("id", chat.ID).Updates(&model.Chat{IsLeave: true, LeaveAt: time.Now()})
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"error": false, "message": "Leaved"})
 }
 
