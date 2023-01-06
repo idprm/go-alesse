@@ -168,8 +168,6 @@ func sendbirdProcess(orderId uint64, healthcenterId uint, userId uint64, doctorI
 			if err != nil {
 				return "", "", errors.New(err.Error())
 			}
-			// delete chat
-			// database.Datasource.DB().Where("user_id", user.ID).Delete(&chat)
 
 			// update chat is leave = true
 			database.Datasource.DB().Model(&model.Chat{}).Where("id", chat.ID).Updates(&model.Chat{IsLeave: true, LeaveAt: time.Now()})

@@ -178,7 +178,7 @@ func SaveMedicalResume(c *fiber.Ctx) error {
 	}
 
 	// chat closed
-	database.Datasource.DB().Model(&model.Chat{}).Where("id", req.ChatID).Updates(model.Chat{IsLeave: true, LeaveAt: time.Now()})
+	database.Datasource.DB().Model(&model.Chat{}).Where("id", req.ChatID).Updates(model.Chat{IsDone: true, DoneAt: time.Now()})
 
 	if req.RequestType == "mobile" {
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{

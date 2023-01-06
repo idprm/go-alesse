@@ -357,8 +357,8 @@ func SavePharmacy(c *fiber.Ctx) error {
 	// chat closed
 	var ch model.Chat
 	database.Datasource.DB().Where("id", req.ChatID).First(&ch)
-	ch.IsLeave = true
-	ch.LeaveAt = time.Now()
+	ch.IsDone = true
+	ch.DoneAt = time.Now()
 	database.Datasource.DB().Save(&ch)
 
 	if req.RequestType == "mobile" {
