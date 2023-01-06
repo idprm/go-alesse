@@ -24,6 +24,7 @@ type HomecareRequest struct {
 	VisitAt        string                    `query:"visit_at" validate:"required" json:"visit_at"`
 	Slug           string                    `query:"slug" json:"slug"`
 	Data           []HomecareMedicineRequest `query:"data" json:"data"`
+	IsSoon         bool                      `query:"is_soon" json:"is_soon"`
 }
 
 type HomecareMedicineRequest struct {
@@ -207,6 +208,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 			VisitAt:        visitAt,
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
+			IsSoon:         req.IsSoon,
 			IsSubmited:     true,
 		}
 		database.Datasource.DB().Create(&homecare)
@@ -282,6 +284,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
+		homecare.IsSoon = req.IsSoon
 		homecare.IsSubmited = true
 		database.Datasource.DB().Save(&homecare)
 
