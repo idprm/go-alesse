@@ -21,7 +21,7 @@ type HomecareRequest struct {
 	ChatID         uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
 	PainComplaints string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
 	EarlyDiagnosis string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
-	VisitAt        string                    `query:"visit_at" validate:"required" json:"visit_at"`
+	VisitAt        time.Time                 `query:"visit_at" validate:"required" json:"visit_at"`
 	Slug           string                    `query:"slug" json:"slug"`
 	Data           []HomecareMedicineRequest `query:"data" json:"data"`
 	IsSoon         bool                      `query:"is_soon" json:"is_soon"`
@@ -186,8 +186,6 @@ func SaveHomecare(c *fiber.Ctx) error {
 	var category model.Category
 	database.Datasource.DB().Where("code", "homecare").First(&category)
 
-	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
-
 	var hc model.Homecare
 	database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
 
@@ -205,7 +203,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 			ChatID:         req.ChatID,
 			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
-			VisitAt:        visitAt,
+			VisitAt:        req.VisitAt,
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
 			IsSoon:         req.IsSoon,
@@ -281,7 +279,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	} else {
 		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
-		homecare.VisitAt = visitAt
+		homecare.VisitAt = req.VisitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
 		homecare.IsSoon = req.IsSoon
