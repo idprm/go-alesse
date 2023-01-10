@@ -233,6 +233,13 @@ var statuses = []model.Status{
 		ValuePush:   "Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient",
 	},
 	{
+		Name:        "DOCTOR_TO_PATIENT_HOMECARE",
+		ValueSystem: "Request homecare",
+		ValueUser:   "Dokter @doctor mengajukan Layanan Homecare untuk Pasien @patient",
+		ValueNotif:  "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
+		ValuePush:   "Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient",
+	},
+	{
 		Name:        "FEEDBACK_TO_PATIENT",
 		ValueSystem: "Feedback user",
 		ValueUser:   "Mengirim link feedback kepada pasien @patient",

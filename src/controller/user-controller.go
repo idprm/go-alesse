@@ -8,7 +8,7 @@ import (
 
 func GetUserByMsisdn(c *fiber.Ctx) error {
 	var user model.User
-	database.Datasource.DB().Where("msisdn", c.Params("msisdn")).Where("is_active", true).First(&user)
+	database.Datasource.DB().Where("msisdn", c.Params("msisdn")).Where("is_active", true).Preload("Healthcenter").First(&user)
 	return c.Status(fiber.StatusOK).JSON(&user)
 }
 

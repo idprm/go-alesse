@@ -109,8 +109,8 @@ const (
 	valHomecareToPatientDone     = "HOMECARE_TO_PATIENT_DONE"
 	valHomecareToHealthOffice    = "HOMECARE_TO_HEALTHOFFICE"
 	valDoctorToHomecare          = "DOCTOR_TO_HOMECARE"
+	valDoctorToPatientHomecare   = "DOCTOR_TO_PATIENT_HOMECARE"
 	valHomecareToPatientProgress = "HOMECARE_TO_PATIENT_PROGRESS"
-	// valMessageToUser    = "MESSAGE_TO_USER"
 )
 
 func GetAllHomecare(c *fiber.Ctx) error {
