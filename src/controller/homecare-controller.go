@@ -180,42 +180,42 @@ func SaveHomecare(c *fiber.Ctx) error {
 	}
 
 	var homecare model.Homecare
-	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").First(&homecare)
+	isExist := database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&homecare)
 
 	// category
 	var category model.Category
 	database.Datasource.DB().Where("code", "homecare").First(&category)
 
-	var hc model.Homecare
-	database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
+	timeLayout := "2006-01-02 15:04:05"
+	log.Println(req.VisitAt)
+	visitAt, _ := time.Parse(timeLayout, req.VisitAt)
+	log.Println(visitAt.UTC())
+
+	var chat model.Chat
+	database.Datasource.DB().Where("id", req.ChatID).First(&chat)
 
 	var officer model.Officer
-	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
+	database.Datasource.DB().Where("healthcenter_id", chat.HealthcenterID).First(&officer)
 
 	var statusDoctorToHomecare model.Status
 	database.Datasource.DB().Where("name", valDoctorToHomecare).First(&statusDoctorToHomecare)
-	notifMessageDoctorToHomecare := util.ContentDoctorToHomecare(statusDoctorToHomecare.ValueNotif, hc)
-	userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
-	pushMessageDoctorToHomecare := util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, hc)
 
 	var statusDoctorToPatientHomecare model.Status
 	database.Datasource.DB().Where("name", valDoctorToPatientHomecare).First(&statusDoctorToPatientHomecare)
-	notifMessageDoctorToPatientHomecare := util.ContentDoctorToPatientHomecare(statusDoctorToPatientHomecare.ValueNotif, hc)
 
-	visitAt, _ := time.Parse("2006-01-02 15:04:05", req.VisitAt)
+	var pushMessageDoctorToHomecare = ""
 
 	if isExist.RowsAffected == 0 {
-		homecare := model.Homecare{
+		database.Datasource.DB().Create(&model.Homecare{
 			ChatID:         req.ChatID,
 			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
-			VisitAt:        visitAt.Local(),
+			VisitAt:        visitAt.UTC(),
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
 			IsSoon:         req.IsSoon,
 			IsSubmited:     true,
-		}
-		database.Datasource.DB().Create(&homecare)
+		})
 
 		database.Datasource.DB().Where("homecare_id", homecare.ID).Delete(&model.HomecareMedicine{})
 
@@ -230,6 +230,15 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Description: v.Description,
 			})
 		}
+
+		var hc model.Homecare
+		database.Datasource.DB().Where("chat_id", req.ChatID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
+
+		notifMessageDoctorToHomecare := util.ContentDoctorToHomecare(statusDoctorToHomecare.ValueNotif, hc)
+		userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
+		pushMessageDoctorToHomecare = util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, hc)
+
+		notifMessageDoctorToPatientHomecare := util.ContentDoctorToPatientHomecare(statusDoctorToPatientHomecare.ValueNotif, hc)
 
 		log.Println(notifMessageDoctorToHomecare)
 		log.Println(userMessageDoctorToHomecare)
@@ -302,7 +311,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	} else {
 		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
-		homecare.VisitAt = visitAt.Local()
+		homecare.VisitAt = visitAt.UTC()
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
 		homecare.IsSoon = req.IsSoon
@@ -322,6 +331,8 @@ func SaveHomecare(c *fiber.Ctx) error {
 				Description: v.Description,
 			})
 		}
+
+		pushMessageDoctorToHomecare = util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, homecare)
 	}
 
 	var chatCategory model.ChatCategory
@@ -409,7 +420,7 @@ func SaveHomecareOfficer(c *fiber.Ctx) error {
 	database.Datasource.DB().Where("id", req.HomecareID).Preload("Chat.User").Preload("Chat.Doctor").Preload("Chat.Healthcenter").First(&hc)
 
 	var officer model.Officer
-	database.Datasource.DB().Where("healthcenter_id", hc.Chat.HealthcenterID).First(&officer)
+	database.Datasource.DB().Where("healthcenter_id", hc.Chat.Healthcenter.ID).First(&officer)
 
 	var status model.Status
 	database.Datasource.DB().Where("name", valHomecareToPatientProgress).First(&status)

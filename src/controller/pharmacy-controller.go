@@ -349,13 +349,11 @@ func SavePharmacy(c *fiber.Ctx) error {
 				CategoryID: category.ID,
 			})
 	} else {
-		chatCategory.ChatID = req.ChatID
-		chatCategory.CategoryID = category.ID
-		database.Datasource.DB().Save(&chatCategory)
+		database.Datasource.DB().Model(model.ChatCategory{}).Where("chat_id = ?", req.ChatID).Update("category_id", category.ID)
+		database.Datasource.DB().Model(model.Chat{}).Where("id = ?", req.ChatID).Updates(model.Chat{IsDone: true, DoneAt: time.Now()})
 	}
 
 	// chat closed
-	database.Datasource.DB().Model(model.Chat{}).Where("id = ?", req.ChatID).Updates(model.Chat{IsDone: true, DoneAt: time.Now()})
 
 	if req.RequestType == "mobile" {
 
