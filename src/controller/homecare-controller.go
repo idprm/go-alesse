@@ -339,11 +339,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	}
 
 	// chat closed
-	var ch model.Chat
-	database.Datasource.DB().Where("id", req.ChatID).First(&ch)
-	ch.IsDone = true
-	ch.DoneAt = time.Now()
-	database.Datasource.DB().Save(&ch)
+	database.Datasource.DB().Model(model.Chat{}).Where("id = ?", req.ChatID).Updates(model.Chat{IsDone: true, DoneAt: time.Now()})
 
 	if req.RequestType == "mobile" {
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
