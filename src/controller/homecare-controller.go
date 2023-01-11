@@ -198,6 +198,10 @@ func SaveHomecare(c *fiber.Ctx) error {
 	userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
 	pushMessageDoctorToHomecare := util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, hc)
 
+	var statusDoctorToPatientHomecare model.Status
+	database.Datasource.DB().Where("name", valDoctorToPatientHomecare).First(&statusDoctorToPatientHomecare)
+	notifMessageDoctorToPatientHomecare := util.ContentDoctorToPatientHomecare(statusDoctorToPatientHomecare.ValueNotif, hc)
+
 	visitAt, _ := time.Parse("2006-01-02 15:04:05", req.VisitAt)
 
 	if isExist.RowsAffected == 0 {
@@ -231,13 +235,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 		log.Println(userMessageDoctorToHomecare)
 		log.Println(pushMessageDoctorToHomecare)
 
-		// var statusMessageToUser model.Status
-		// database.Datasource.DB().Where("name", valMessageToUser).First(&statusMessageToUser)
-		// notifMessageToUser := util.ContentMessageToUser(statusMessageToUser.ValueNotif, hc, officer)
-		// userMessageToUser := util.StatusMessageToUser(statusMessageToUser.ValueUser, hc, officer)
-
-		// log.Println(notifMessageToUser)
-		// log.Println(userMessageToUser)
+		log.Println(notifMessageDoctorToPatientHomecare)
 
 		if req.RequestType == "web" {
 			zenzivaDoctorToHomecare, err := handler.ZenzivaSendSMS(officer.Phone, notifMessageDoctorToHomecare)
@@ -248,14 +246,6 @@ func SaveHomecare(c *fiber.Ctx) error {
 				})
 			}
 
-			// zenzivaMessageToUser, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageToUser)
-			// if err != nil {
-			// 	return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-			// 		"error":   true,
-			// 		"message": err.Error(),
-			// 	})
-			// }
-
 			// insert to zenziva
 			database.Datasource.DB().Create(
 				&model.Zenziva{
@@ -264,6 +254,37 @@ func SaveHomecare(c *fiber.Ctx) error {
 					Response: zenzivaDoctorToHomecare,
 				},
 			)
+
+			if !req.IsSoon {
+				zenzivaDoctorToPatientHomecare, err := handler.ZenzivaSendSMS(hc.Chat.User.Msisdn, notifMessageDoctorToPatientHomecare)
+				if err != nil {
+					return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+						"error":   true,
+						"message": err.Error(),
+					})
+				}
+
+				// insert to zenziva
+				database.Datasource.DB().Create(
+					&model.Zenziva{
+						Msisdn:   hc.Chat.User.Msisdn,
+						Action:   valDoctorToPatientHomecare,
+						Response: zenzivaDoctorToPatientHomecare,
+					},
+				)
+
+				// insert to transaction
+				database.Datasource.DB().Create(
+					&model.Transaction{
+						UserID:       hc.Chat.UserID,
+						ChatID:       hc.ChatID,
+						SystemStatus: statusDoctorToPatientHomecare.ValueSystem,
+						NotifStatus:  notifMessageDoctorToPatientHomecare,
+						UserStatus:   notifMessageDoctorToPatientHomecare,
+						PushStatus:   notifMessageDoctorToPatientHomecare,
+					},
+				)
+			}
 		}
 
 		// insert to transaction

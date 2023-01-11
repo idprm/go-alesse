@@ -211,6 +211,7 @@ var statuses = []model.Status{
 		ValueNotif:  "Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini *@phone*",
 		ValuePush:   "Hello pasien @patient, tim Homecare @health_center akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini @phone",
 	},
+
 	{
 		Name:        "HOMECARE_TO_PATIENT_DONE",
 		ValueSystem: "Pasien telah dikunjungi",
@@ -234,10 +235,10 @@ var statuses = []model.Status{
 	},
 	{
 		Name:        "DOCTOR_TO_PATIENT_HOMECARE",
-		ValueSystem: "Request homecare",
-		ValueUser:   "Dokter @doctor mengajukan Layanan Homecare untuk Pasien @patient",
-		ValueNotif:  "Hello Admin Homecare *@health_center*, terdapat permintaan layanan homecare dari *@doctor* untuk pasien *@patient* Cek disini *@link*, Simpan Nomor ke Kontak agar link bisa di Klik",
-		ValuePush:   "Hello Admin Homecare @health_center, terdapat permintaan layanan homecare dari @doctor untuk pasien @patient",
+		ValueSystem: "Notif schedule homecare",
+		ValueUser:   "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
+		ValueNotif:  "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
+		ValuePush:   "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
 	},
 	{
 		Name:        "FEEDBACK_TO_PATIENT",

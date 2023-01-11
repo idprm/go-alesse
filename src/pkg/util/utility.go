@@ -237,6 +237,13 @@ func PushDoctorToHomecare(content string, homecare model.Homecare) string {
 	return content
 }
 
+func ContentDoctorToPatientHomecare(content string, homecare model.Homecare) string {
+	// Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient
+	replacer := strings.NewReplacer("@doctor", homecare.Chat.Doctor.Name, "@visit_at", homecare.VisitAt.Format("02-01-2006"), "@hour", homecare.VisitAt.Format("15:04"))
+	content = replacer.Replace(content)
+	return content
+}
+
 func ContentHomecareToPatientProgress(content string, homecare model.Homecare, officer model.Officer) string {
 	//Hello pasien *@patient*, tim Homecare *@health_center* akan datang kerumah Anda dalam waktu 15 menit - 1 jam. Apabila ada pertanyaan silakan hubungi nomor ini *@phone*
 	replacer := strings.NewReplacer("@patient", homecare.Chat.User.Name, "@health_center", homecare.Chat.Healthcenter.Name, "@phone", officer.Phone)
