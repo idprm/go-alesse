@@ -21,7 +21,7 @@ type HomecareRequest struct {
 	ChatID         uint64                    `query:"chat_id" validate:"required" json:"chat_id"`
 	PainComplaints string                    `query:"pain_complaints" validate:"required" json:"pain_complaints"`
 	EarlyDiagnosis string                    `query:"early_diagnosis" validate:"required" json:"early_diagnosis"`
-	VisitAt        time.Time                 `query:"visit_at" validate:"required" json:"visit_at"`
+	VisitAt        string                    `query:"visit_at" validate:"required" json:"visit_at"`
 	Slug           string                    `query:"slug" json:"slug"`
 	Data           []HomecareMedicineRequest `query:"data" json:"data"`
 	IsSoon         bool                      `query:"is_soon" json:"is_soon"`
@@ -198,12 +198,14 @@ func SaveHomecare(c *fiber.Ctx) error {
 	userMessageDoctorToHomecare := util.StatusDoctorToHomecare(statusDoctorToHomecare.ValueUser, hc)
 	pushMessageDoctorToHomecare := util.PushDoctorToHomecare(statusDoctorToHomecare.ValuePush, hc)
 
+	visitAt, _ := time.Parse("2006-01-02 15:04", req.VisitAt)
+
 	if isExist.RowsAffected == 0 {
 		homecare := model.Homecare{
 			ChatID:         req.ChatID,
 			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
-			VisitAt:        req.VisitAt,
+			VisitAt:        visitAt,
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
 			IsSoon:         req.IsSoon,
@@ -279,7 +281,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	} else {
 		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
-		homecare.VisitAt = req.VisitAt
+		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
 		homecare.IsSoon = req.IsSoon
