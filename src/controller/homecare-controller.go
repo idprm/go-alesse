@@ -334,7 +334,6 @@ func SaveHomecare(c *fiber.Ctx) error {
 				CategoryID: category.ID,
 			})
 	} else {
-		chatCategory.ChatID = req.ChatID
 		chatCategory.CategoryID = category.ID
 		database.Datasource.DB().Save(&chatCategory)
 	}
