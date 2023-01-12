@@ -189,7 +189,6 @@ func SaveHomecare(c *fiber.Ctx) error {
 	timeLayout := "2006-01-02 15:04:05"
 	log.Println(req.VisitAt)
 	visitAt, _ := time.Parse(timeLayout, req.VisitAt)
-	log.Println(visitAt.UTC())
 
 	var chat model.Chat
 	database.Datasource.DB().Where("id", req.ChatID).First(&chat)
@@ -210,7 +209,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 			ChatID:         req.ChatID,
 			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
-			VisitAt:        visitAt.UTC(),
+			VisitAt:        visitAt.Add(time.Hour * -7),
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
 			IsSoon:         req.IsSoon,
@@ -311,7 +310,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	} else {
 		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
-		homecare.VisitAt = visitAt.UTC()
+		homecare.VisitAt = visitAt.Add(time.Hour * -7)
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
 		homecare.IsSoon = req.IsSoon

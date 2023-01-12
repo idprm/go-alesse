@@ -237,7 +237,7 @@ var statuses = []model.Status{
 		Name:        "DOCTOR_TO_PATIENT_HOMECARE",
 		ValueSystem: "Notif schedule homecare",
 		ValueUser:   "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
-		ValueNotif:  "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
+		ValueNotif:  "Dokter *@doctor* telah menjadwalkan kunjungan Homecare pada tanggal *@visit_at* pukul *@hour* untuk Pasien *@patient*",
 		ValuePush:   "Dokter @doctor telah menjadwalkan kunjungan Homecare pada tanggal @visit_at pukul @hour untuk Pasien @patient",
 	},
 	{
