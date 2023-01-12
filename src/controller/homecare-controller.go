@@ -209,7 +209,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 			ChatID:         req.ChatID,
 			PainComplaints: req.PainComplaints,
 			EarlyDiagnosis: req.EarlyDiagnosis,
-			VisitAt:        visitAt.Add(time.Hour * -7),
+			VisitAt:        visitAt,
 			Slug:           req.Slug,
 			SubmitedAt:     time.Now(),
 			IsSoon:         req.IsSoon,
@@ -310,7 +310,7 @@ func SaveHomecare(c *fiber.Ctx) error {
 	} else {
 		homecare.PainComplaints = req.PainComplaints
 		homecare.EarlyDiagnosis = req.EarlyDiagnosis
-		homecare.VisitAt = visitAt.Add(time.Hour * -7)
+		homecare.VisitAt = visitAt
 		homecare.Slug = req.Slug
 		homecare.SubmitedAt = time.Now()
 		homecare.IsSoon = req.IsSoon

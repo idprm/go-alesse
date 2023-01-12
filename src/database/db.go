@@ -37,7 +37,7 @@ func Connect() {
 		panic(err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True",
 		secret.DB.UserName,
 		secret.DB.Password,
 		secret.DB.Host,
