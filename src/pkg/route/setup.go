@@ -119,6 +119,12 @@ func Setup(app *fiber.App) {
 	histories := v1.Group("histories")
 	histories.Get("/:msisdn", controller.GetMedicalHistory)
 
+	channels := v1.Group("channels")
+	channels.Get("/doctors/:channel", controller.GetDoctorByChannel)
+	channels.Get("/apothecaries/:channel", controller.GetApothecaryByChannel)
+	channels.Get("/officers/:channel", controller.GetOfficerByChannel)
+	channels.Get("/drivers/:channel", controller.GetDriverByChannel)
+
 	/**
 	 * AUTHENTICATED ROUTES
 	 */

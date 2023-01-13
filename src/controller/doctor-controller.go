@@ -19,6 +19,13 @@ func GetDoctorByHealthCenter(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(doctors)
 }
 
+func GetDoctorByChannel(c *fiber.Ctx) error {
+	var doctors []model.Doctor
+	channel := c.Params("channel")
+	database.Datasource.DB().Raw("SELECT a.* FROM doctors a LEFT JOIN chats b ON b.healthcenter_id = a.healthcenter_id WHERE b.channel_url = ?", channel).Scan(&doctors)
+	return c.Status(fiber.StatusOK).JSON(doctors)
+}
+
 func GetDoctor(c *fiber.Ctx) error {
 	username := c.Params("username")
 	var doctor model.Doctor

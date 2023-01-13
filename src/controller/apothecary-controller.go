@@ -19,6 +19,13 @@ func GetApothecaryByHealthCenter(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(apothecaries)
 }
 
+func GetApothecaryByChannel(c *fiber.Ctx) error {
+	var apothecaries []model.Apothecary
+	channel := c.Params("channel")
+	database.Datasource.DB().Raw("SELECT a.* FROM apothecaries a LEFT JOIN chats b ON b.healthcenter_id = a.healthcenter_id WHERE b.channel_url = ?", channel).Scan(&apothecaries)
+	return c.Status(fiber.StatusOK).JSON(apothecaries)
+}
+
 func GetApothecary(c *fiber.Ctx) error {
 	var apothecary model.Apothecary
 	database.Datasource.DB().Where("phone", c.Params("phone")).Preload("Healthcenter").First(&apothecary)
