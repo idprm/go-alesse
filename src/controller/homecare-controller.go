@@ -188,7 +188,8 @@ func SaveHomecare(c *fiber.Ctx) error {
 
 	timeLayout := "2006-01-02 15:04:05"
 	log.Println(req.VisitAt)
-	visitAt, _ := time.Parse(timeLayout, req.VisitAt)
+	parseVisitAt, _ := time.Parse(timeLayout, req.VisitAt)
+	visitAt := parseVisitAt.Add(time.Hour * -7)
 
 	var chat model.Chat
 	database.Datasource.DB().Where("id", req.ChatID).First(&chat)

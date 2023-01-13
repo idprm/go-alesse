@@ -37,12 +37,13 @@ func Connect() {
 		panic(err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=%s",
 		secret.DB.UserName,
 		secret.DB.Password,
 		secret.DB.Host,
 		secret.DB.Port,
 		secret.DB.DBName,
+		"Asia%2FJakarta",
 	)
 
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
